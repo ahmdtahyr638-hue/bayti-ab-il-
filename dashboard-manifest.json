@@ -1,7 +1,7 @@
 {
   "name": "بيتي سكن C - العمارات",
   "short_name": "العمارات",
-  "start_url": "/dashboard.html",
+  "start_url": "dashboard.html",
   "display": "standalone",
   "background_color": "#1a3e6f",
   "theme_color": "#1a3e6f",

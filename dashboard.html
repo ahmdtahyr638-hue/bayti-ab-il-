@@ -8,10 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">  
     <meta name="apple-mobile-web-app-title" content="بيتي سكن C">  
     <title>بيتي سكن C - العمارات</title>  
+    
     <link rel="manifest" href="dashboard-manifest.json">  
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231a3e6f'/%3E%3Ctext x='96' y='110' text-anchor='middle' font-size='80' fill='white'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E">  
-    <script src="html2pdf.bundle.min.js"></script>  
-    <!-- استدعاء مباشر وموثوق لمكتبة Excel لضمان عدم تعطل الزر نهائياً -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
     <style>  
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }  
@@ -107,7 +107,7 @@
             <h1>بيتي سكن C</h1>  
             <p>نظرة شاملة على جميع العمارات (32 عمارة)</p>  
             <div class="nav-links">  
-                <a href="index.html" class="nav-link">🔙 نظام التسيير</a>  
+                <a href="/" class="nav-link">🔙 نظام التسيير</a>  
                 <button class="nav-link" onclick="location.reload()">🔄 تحديث البيانات</button>  
             </div>  
             <div class="year-selector">  
@@ -176,9 +176,7 @@
     // ==================== SERVICE WORKER ====================  
     if ('serviceWorker' in navigator) {  
         window.addEventListener('load', () => {  
-            navigator.serviceWorker.register('dashboard-sw.js').then(() => {  
-                document.getElementById('offlineBadge').style.display = 'flex';  
-            }).catch(() => {});  
+            navigator.serviceWorker.register('dashboard-sw.js').catch(() => {});  
         });  
     }  
       
@@ -244,40 +242,34 @@
         return db.settings?.monthlyFee || 125;  
     }  
       
-    function getDueMonthsUntil(resident, endYear, endMonth) {  
-        const joinDate = resident.joinDate ? new Date(resident.joinDate) : new Date('2024-01-01');  
-        const endDate = new Date(endYear, endMonth, 1);  
-          
-        if (joinDate > endDate) return { months: 0, amount: 0 };  
-          
-        let months = 0;  
-        let c = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);  
-        while (c <= endDate) {  
-            months++;  
-            c.setMonth(c.getMonth() + 1);  
-        }  
-        return { months, amount: months * getMonthlyFeeSync() };  
-    }  
-      
     function getMonthlyFeeSync() {  
         return 125;  
     }  
       
     function getBalanceAtYearStart(resident, year) {  
         const prevYear = year - 1;  
-        const due = getDueMonthsUntil(resident, prevYear, 11);  
+        let totalDuePrev = 0;  
+        const joinDate = resident.joinDate ? new Date(resident.joinDate) : new Date('2024-01-01');  
+        const endDatePrev = new Date(prevYear, 11, 31);  
+        
+        if (joinDate <= endDatePrev) {  
+            let current = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);  
+            while (current <= endDatePrev) {  
+                totalDuePrev += getMonthlyFeeSync();  
+                current.setMonth(current.getMonth() + 1);  
+            }  
+        }  
           
-        const endDate = new Date(prevYear, 11, 31, 23, 59, 59);  
         let totalPaidPrev = 0;  
         if (resident.payments) {  
             resident.payments.forEach(p => {  
                 const paymentDate = p.date ? new Date(p.date) : null;  
-                if (paymentDate && paymentDate <= endDate) {  
+                if (paymentDate && paymentDate <= endDatePrev) {  
                     totalPaidPrev += (p.amount || 0);  
                 }  
             });  
         }  
-        return totalPaidPrev - due.amount;  
+        return totalPaidPrev - totalDuePrev;  
     }  
       
     function getAnnualDueForYear(resident, year) {  
@@ -312,13 +304,6 @@
         return total;  
     }  
       
-    function getBalanceAtYearEnd(resident, year) {  
-        const startBalance = getBalanceAtYearStart(resident, year);  
-        const annualDue = getAnnualDueForYear(r => r, year);  
-        const paidThisYear = getPaidInYear(resident, year);  
-        return startBalance + paidThisYear - annualDue;  
-    }  
-    
     function getBalanceAtYearEnd(resident, year) {  
         const startBalance = getBalanceAtYearStart(resident, year);  
         const annualDue = getAnnualDueForYear(resident, year);  
@@ -384,53 +369,23 @@
         const gridContainer = document.getElementById('grid');  
         if (!gridContainer) return;  
       
-        if (gridContainer.children.length === 0) {  
-            let html = BUILDINGS.map(b => {  
-                const count = residents.filter(r => String(r.building || '') === String(b)).length;  
-                return `<div class="card ${currentBuilding === b ? 'active' : ''}" onclick="showDetail('${b}')">  
-                    <div class="num">${b}</div>  
-                    <div class="count">${count} ساكن</div>  
-                </div>`;  
-            }).join('');  
-              
-            html += `<div class="card expense-card ${currentBuilding === '33' ? 'active' : ''}" onclick="showDetail('33')">  
-                <div class="count">💸 مصاريف ومداخل سنة</div>  
+        let html = BUILDINGS.map(b => {  
+            const count = residents.filter(r => String(r.building || '') === String(b)).length;  
+            return `<div class="card ${currentBuilding === b ? 'active' : ''}" onclick="showDetail('${b}')">  
+                <div class="num">${b}</div>  
+                <div class="count">${count} ساكن</div>  
             </div>`;  
-              
-            html += `<div class="card accounts-card ${currentBuilding === '34' ? 'active' : ''}" onclick="showDetail('34')">  
-                <div class="count">📊 حسابات سنة</div>  
-            </div>`;  
-              
-            gridContainer.innerHTML = html;  
-        } else {  
-            BUILDINGS.forEach((b, idx) => {  
-                const count = residents.filter(r => String(r.building || '') === String(b)).length;  
-                const card = gridContainer.children[idx];  
-                if (card) {  
-                    const countDiv = card.querySelector('.count');  
-                    if (countDiv && countDiv.textContent !== `${count} ساكن`) {  
-                        countDiv.textContent = `${count} ساكن`;  
-                    }  
-                    if (currentBuilding === b) {  
-                        card.classList.add('active');  
-                    } else {  
-                        card.classList.remove('active');  
-                    }  
-                }  
-            });  
-              
-            const expCard = gridContainer.children[BUILDINGS.length];  
-            if (expCard) {  
-                if (currentBuilding === '33') expCard.classList.add('active');  
-                else expCard.classList.remove('active');  
-            }  
-              
-            const accCard = gridContainer.children[BUILDINGS.length + 1];  
-            if (accCard) {  
-                if (currentBuilding === '34') accCard.classList.add('active');  
-                else accCard.classList.remove('active');  
-            }  
-        }  
+        }).join('');  
+          
+        html += `<div class="card expense-card ${currentBuilding === '33' ? 'active' : ''}" onclick="showDetail('33')">  
+            <div class="count">💸 مصاريف ومداخل سنة</div>  
+        </div>`;  
+          
+        html += `<div class="card accounts-card ${currentBuilding === '34' ? 'active' : ''}" onclick="showDetail('34')">  
+            <div class="count">📊 حسابات سنة</div>  
+        </div>`;  
+          
+        gridContainer.innerHTML = html;  
     }  
       
     async function showDetail(b) {  
@@ -464,15 +419,10 @@
         <div class="table-wrap">  
             <table id="printTable">  
                 <thead>  
-                    <tr>  
-                        <th>#</th><th>الاسم العائلي والشخصي</th><th>مرجع الملكية</th><th>الشقة</th><th>الهاتف</th>  
-                        <th>الرصيد قبله في 01/01/${selectedYear}</th><th>المبلغ السنوي للإسهام ${selectedYear}</th>  
-                        <th>دفوعات الدورة المحاسبية ${selectedYear}</th><th>رصيد متبقي في 31/12/${selectedYear}</th><th>الحالة</th>  
-                    </tr>  
-                </thead>  
+                    <tr><th>#</th><th>الاسم العائلي والشخصي</th><th>مرجع الملكية</th><th>الشقة</th><th>الهاتف</th><th>الرصيد قبله في 01/01/${selectedYear}</th><th>المبلغ السنوي للإسهام ${selectedYear}</th><th>دفوعات الدورة المحاسبية ${selectedYear}</th><th>رصيد متبقي في 31/12/${selectedYear}</th><th>الحالة</th></tr></thead>  
                 <tbody id="tableBodyDom"></tbody>  
                 <tfoot id="tableFootDom"></tfoot>  
-            </table>  
+            8d  
         </div>`;  
         document.getElementById('pdfBtn').style.display = 'inline-block';  
     }  
@@ -483,14 +433,10 @@
         <h3 style="color: var(--red); margin-bottom: 12px; margin-top: 10px;">💸 سجل مصاريف ومداخيل العمارة والمجمع بالتفصيل لسنة ${selectedYear}</h3>  
         <div class="table-wrap">  
             <table id="printTable">  
-                <thead>  
-                    <tr>  
-                        <th>#</th><th>بيان / اسم المصروف</th><th>التاريخ</th><th>النوع والتبعية</th><th>المبلغ المستقطع</th>  
-                    </tr>  
-                </thead>  
+                <thead><tr><th>#</th><th>بيان / اسم المصروف</th><th>التاريخ</th><th>النوع والتبعية</th><th>المبلغ المستقطع</th></tr></thead>  
                 <tbody id="expensesTableBody"></tbody>  
                 <tfoot id="expensesTableFoot"></tfoot>  
-            </table>  
+            8d  
         </div>`;  
         document.getElementById('pdfBtn').style.display = 'inline-block';  
     }  
@@ -501,22 +447,18 @@
         <h3 style="color: var(--green); margin-bottom: 12px; margin-top: 10px;">📊 حسابات سنة ${selectedYear} - التقرير المالي الختامي</h3>  
         <div class="table-wrap">  
             <table id="printTable">  
-                <thead>  
-                    <tr>  
-                        <th>#</th><th>بيان الحساب</th><th>المبلغ (DH)</th><th>الشرح التوضيحي</th>  
-                    </tr>  
-                </thead>  
+                <thead><tr><th>#</th><th>بيان الحساب</th><th>المبلغ (DH)</th><th>الشرح التوضيحي</th></tr></thead>  
                 <tbody id="accountsTableBody"></tbody>  
                 <tfoot id="accountsTableFoot"></tfoot>  
-            </table>  
+            8d  
         </div>`;  
         document.getElementById('pdfBtn').style.display = 'inline-block';  
     }  
       
     function updateTableRowsSilent(b, db) {  
-        if (!db) return; 
+        if (!db) return;   
         const allExpenses = db.expenses || [];  
-        const residentsAll = (db.users || []).filter(u => u && u.role === 'resident');
+        const residentsAll = (db.users || []).filter(u => u && u.role === 'resident');  
           
         if (b === '33') {  
             document.getElementById('detailTitle').textContent = `💸 مصاريف ومداخيل سنة - السنة: ${selectedYear}`;  
@@ -537,22 +479,12 @@
                     let amt = (e.amount || 0);  
                     totalExpensesSum += amt;  
                     let typeStr = e.building ? `خاص بعمارة ${e.building}` : "عام لكل العمارات";  
-                    return `<tr>  
-                        <td>${idx + 1}</td>  
-                        <td><strong>${e.title || e.description || 'مصروف عام'}</strong></td>  
-                        <td>${e.date || '---'}</td>  
-                        <td><span class="badge ${e.building?'badge-o':'badge-g'}">${typeStr}</span></td>  
-                        <td class="text-r">${amt.toLocaleString()} DH</td>  
-                    </tr>`;  
+                    return `<tr><td>${idx + 1}</td><td><strong>${e.title || e.description || 'مصروف عام'}</strong></td><td>${e.date || '---'}</td><td><span class="badge ${e.building?'badge-o':'badge-g'}">${typeStr}</span></td><td class="text-r">${amt.toLocaleString()} DH</td></tr>`;  
                 }).join('');  
             }  
       
             if (expensesTfoot) {  
-                expensesTfoot.innerHTML = `  
-                <tr class="main-total">  
-                    <td colspan="4"><strong>إجمالي نفقات الصندوق الصافية المنصرفة</strong></td>  
-                    <td class="text-r" style="color: var(--red);">${totalExpensesSum.toLocaleString()} DH</td>  
-                </tr>`;  
+                expensesTfoot.innerHTML = `<tr class="main-total"><td colspan="4"><strong>إجمالي نفقات الصندوق الصافية المنصرفة</strong></td><td class="text-r" style="color: var(--red);">${totalExpensesSum.toLocaleString()} DH</td></tr>`;  
             }  
             return;  
         }  
@@ -570,21 +502,16 @@
             }).reduce((a, e) => a + (e.amount || 0), 0);  
             const netBalance = incomeThisYear - expensesThisYear;  
               
-            accountsTbody.innerHTML = `  
-                <tr><td>1</td><td>💰 إجمالي مداخيل السنة ${selectedYear}</td><td class="text-g">${incomeThisYear.toLocaleString()} DH</td><td>المبالغ الإجمالية المستلمة من الساكنة</td></tr>  
-                <tr><td>2</td><td>💸 إجمالي مصاريف السنة ${selectedYear}</td><td class="text-r">${expensesThisYear.toLocaleString()} DH</td><td>المصاريف المخصومة من صندوق العمارة الحصصي</td></tr>  
-                <tr><td>3</td><td>📦 صافي الفائض/الخسارة للسنة ${selectedYear}</td><td class="${netBalance >= 0 ? 'text-g' : 'text-r'}">${netBalance.toLocaleString()} DH</td><td>${netBalance >= 0 ? 'الفائض الصافي الحالي المحتسب' : 'الخسارة المحتسبة'}</td></tr>`;  
+            accountsTbody.innerHTML = `<tr><td>1</td><td>💰 إجمالي مداخيل السنة ${selectedYear}</td><td class="text-g">${incomeThisYear.toLocaleString()} DH</td><td>المبالغ الإجمالية المستلمة من الساكنة</td></tr>  
+            <tr><td>2</td><td>💸 إجمالي مصاريف السنة ${selectedYear}</td><td class="text-r">${expensesThisYear.toLocaleString()} DH</td><td>المصاريف المخصومة من صندوق العمارة الحصصي</td></tr>  
+            <tr><td>3</td><td>📦 صافي الفائض/الخسارة للسنة ${selectedYear}</td><td class="${netBalance >= 0 ? 'text-g' : 'text-r'}">${netBalance.toLocaleString()} DH</td><td>${netBalance >= 0 ? 'الفائض الصافي الحالي المحتسب' : 'الخسارة المحتسبة'}</td></tr>`;  
               
             const totalIncomeAllTime = residentsAll.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
             const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
             const globalTotalBalance = (db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime;  
               
             if (accountsTfoot) {  
-                accountsTfoot.innerHTML = `  
-                <tr class="main-total">  
-                    <td colspan="3"><strong>🏦 إجمالي الصندوق العام التراكمي (المجمع كامل)</strong></td>  
-                    <td class="${globalTotalBalance >= 0 ? 'text-g' : 'text-r'}">${globalTotalBalance.toLocaleString()} DH</td>  
-                </tr>`;  
+                accountsTfoot.innerHTML = `<tr class="main-total"><td colspan="3"><strong>🏦 إجمالي الصندوق العام التراكمي (المجمع كامل)</strong></td><td class="${globalTotalBalance >= 0 ? 'text-g' : 'text-r'}">${globalTotalBalance.toLocaleString()} DH</td></tr>`;  
             }  
             return;  
         }  
@@ -614,24 +541,21 @@
             const prevColor = prevBalance >= 0 ? 'text-g' : 'text-r';  
             const endColor = endBalance >= 0 ? 'text-g' : 'text-r';  
               
-            return {  
-                cells: [  
-                    `${i + 1}`,  
-                    `<strong>${r.name || '---'}</strong>`,  
-                    `${r.propriete || r.propRef || '---'}`,  
-                    `${r.appt || '---'}`,  
-                    `${r.phone || '---'}`,  
-                    `${prevBalance.toLocaleString()} DH`,  
-                    `${annualDue.toLocaleString()} DH`,  
-                    `${paidInYear.toLocaleString()} DH`,  
-                    `${endBalance.toLocaleString()} DH`,  
-                    `<span class="badge ${st.c}">${st.t}</span>`  
-                ],  
-                classes: ['', '', '', '', '', prevColor, '', 'text-g', endColor, '']  
-            };  
+            return `<tr>  
+                <td>${i + 1}</td>  
+                <td><strong>${r.name || '---'}</strong></td>  
+                <td>${r.propriete || r.propRef || '---'}</td>  
+                <td>${r.appt || '---'}</td>  
+                <td>${r.phone || '---'}</td>  
+                <td class="${prevColor}">${prevBalance.toLocaleString()} DH</td>  
+                <td>${annualDue.toLocaleString()} DH</td>  
+                <td class="text-g">${paidInYear.toLocaleString()} DH</td>  
+                <td class="${endColor}">${endBalance.toLocaleString()} DH</td>  
+                <td><span class="badge ${st.c}">${st.t}</span></td>  
+            </tr>`;  
         });  
       
-        tbody.innerHTML = rowsHtmlArray.map(r => `<tr>${r.cells.map((c, idx) => `<td class="${r.classes[idx]}">${c}</td>`).join('')}</tr>`).join('');  
+        tbody.innerHTML = rowsHtmlArray.join('');  
       
         const filteredExpenses = allExpenses.filter(e => {  
             const d = e.date ? new Date(e.date) : null;  
@@ -654,30 +578,11 @@
       
         if (tfoot) {  
             tfoot.innerHTML = `  
-            <tr class="main-total">  
-                <td colspan="5"><strong>الإجمالي الإداري للسكان</strong></td>  
-                <td class="${totalPrev >= 0 ? 'text-g' : 'text-r'}">${totalPrev.toLocaleString()} DH</td>  
-                <td>${totalAnnual.toLocaleString()} DH</td>  
-                <td class="text-g">${totalPaid.toLocaleString()} DH</td>  
-                <td class="${totalRemaining >= 0 ? 'text-g' : 'text-r'}">${totalRemaining.toLocaleString()} DH</td>  
-                <td>${residents.length} ساكن</td>  
-            </tr>  
-            <tr class="extra-calc">  
-                <td colspan="5" style="text-align: left; padding-left: 15px;">💰 مداخيل العمارة في سنة ${selectedYear}:</td>  
-                <td colspan="5" class="text-g" style="text-align: right; padding-right: 15px;">${totalPaid.toLocaleString()} DH</td>  
-            </tr>  
-            <tr class="extra-calc">  
-                <td colspan="5" style="text-align: left; padding-left: 15px;">💸 مصاريف العمارة الحصصية في سنة ${selectedYear}:</td>  
-                <td colspan="5" class="text-r" style="text-align: right; padding-right: 15px;">${expensesThisYearTotal.toLocaleString()} DH</td>  
-            </tr>  
-            <tr class="extra-calc" style="background: #e3f7ec;">  
-                <td colspan="5" style="text-align: left; padding-left: 15px;">📦 صافي الفائض/الباقي في الصندوق لهذه السنة (${selectedYear}):</td>  
-                <td colspan="5" class="${netYearBalance >= 0 ? 'text-g' : 'text-r'}" style="text-align: right; padding-right: 15px; font-size: 13px;">${netYearBalance.toLocaleString()} DH</td>  
-            </tr>  
-            <tr class="extra-calc" style="background: #e8f0fe;">  
-                <td colspan="5" style="text-align: left; padding-left: 15px;">🏦 إجمالي الصندوق العام التراكمي (المجمع كامل):</td>  
-                <td colspan="5" style="text-align: right; padding-right: 15px; font-size: 13px; color: var(--primary); font-weight:bold;">${globalTotalBalance.toLocaleString()} DH</td>  
-            </tr>`;  
+            <tr class="main-total"><td colspan="5"><strong>الإجمالي الإداري للسكان</strong></td><td class="${totalPrev >= 0 ? 'text-g' : 'text-r'}">${totalPrev.toLocaleString()} DH</td><td>${totalAnnual.toLocaleString()} DH</td><td class="text-g">${totalPaid.toLocaleString()} DH</td><td class="${totalRemaining >= 0 ? 'text-g' : 'text-r'}">${totalRemaining.toLocaleString()} DH</td><td>${residents.length} ساكن</td></tr>  
+            <tr class="extra-calc"><td colspan="5" style="text-align: left; padding-left: 15px;">💰 مداخيل العمارة في سنة ${selectedYear}:</td><td colspan="5" class="text-g" style="text-align: right; padding-right: 15px;">${totalPaid.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc"><td colspan="5" style="text-align: left; padding-left: 15px;">💸 مصاريف العمارة الحصصية في سنة ${selectedYear}:</td><td colspan="5" class="text-r" style="text-align: right; padding-right: 15px;">${expensesThisYearTotal.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc" style="background: #e3f7ec;"><td colspan="5" style="text-align: left; padding-left: 15px;">📦 صافي الفائض/الباقي في الصندوق لهذه السنة (${selectedYear}):</td><td colspan="5" class="${netYearBalance >= 0 ? 'text-g' : 'text-r'}" style="text-align: right; padding-right: 15px; font-size: 13px;">${netYearBalance.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc" style="background: #e8f0fe;"><td colspan="5" style="text-align: left; padding-left: 15px;">🏦 إجمالي الصندوق العام التراكمي (المجمع كامل):</td><td colspan="5" style="text-align: right; padding-right: 15px; font-size: 13px; color: var(--primary); font-weight:bold;">${globalTotalBalance.toLocaleString()} DH</td></tr>`;  
         }  
     }  
       
@@ -687,21 +592,18 @@
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));  
     }  
       
-    // ==================== PRINT PDF ====================  
     async function printTable() {  
         if (!currentBuilding) return;  
         window.print();  
     }  
       
-    // ==================== DOWNLOAD EXCEL ====================  
     async function downloadExcel() {  
         if (!currentBuilding) return;  
         
-        // التحقق أولاً من تحميل المكتبة لمنع انهيار البرنامج
-        if (typeof XLSX === 'undefined') {
-            alert("المكتبة البرمجية المسؤولة عن الـ Excel قيد التحميل أو غير متاحة حالياً، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.");
-            return;
-        }
+        if (typeof XLSX === 'undefined') {  
+            alert("المكتبة البرمجية المسؤولة عن الـ Excel قيد التحميل أو غير متاحة حالياً، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.");  
+            return;  
+        }  
           
         let residents = [];  
         let allExpenses = [];  
@@ -721,12 +623,10 @@
       
         if (currentBuilding === '33') {  
             const expData = [['#', 'بيان / اسم المصروف', 'التاريخ', 'النوع والتبعية', 'المبلغ المستقطع (DH)']];  
-              
             const filteredExpenses = allExpenses.filter(e => {  
                 const d = e.date ? new Date(e.date) : null;  
                 return d && d.getFullYear() === selectedYear;  
             });  
-      
             let total = 0;  
             filteredExpenses.forEach((e, idx) => {  
                 let amt = Number(e.amount || 0);  
@@ -734,11 +634,9 @@
                 let typeStr = e.building ? `خاص بعمارة ${e.building}` : "عام لكل العمارات";  
                 expData.push([idx+1, e.title || e.description || 'مصروف', e.date || '---', typeStr, amt]);  
             });  
-              
             expData.push(['', 'إجمالي النفقات الصافية المنصرفة للعام', '', '', total]);  
-      
             const wsExp = XLSX.utils.aoa_to_sheet(expData);  
-            wsExp['!views'] = [{RTL: true}]; 
+            wsExp['!views'] = [{RTL: true}];  
             wsExp['!cols'] = [{wch:6},{wch:40},{wch:15},{wch:25},{wch:22}];  
             XLSX.utils.book_append_sheet(wb, wsExp, `المصاريف_${selectedYear}`);  
             XLSX.writeFile(wb, `سجل_المصاريف_والمداخيل_سنة_${selectedYear}.xlsx`);  
@@ -752,11 +650,9 @@
                 return d && d.getFullYear() === selectedYear;  
             }).reduce((a, e) => a + (e.amount || 0), 0));  
             const netBalance = incomeThisYear - expensesThisYear;  
-              
             const totalIncomeAllTime = residents.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
             const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
             const globalTotalBalance = Number((db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime);  
-              
             const accountsData = [  
                 ['#', 'بيان الحساب المالي المجمع', 'المبلغ (DH)', 'الشرح التوضيحي للخانة'],  
                 [1, `إجمالي مداخيل السنة ${selectedYear}`, incomeThisYear, 'المبالغ الإجمالية المستلمة من الساكنة'],  
@@ -764,7 +660,6 @@
                 [3, `صافي الفائض/الخسارة للسنة ${selectedYear}`, netBalance, netBalance >= 0 ? 'الفائض الصافي الحالي المحتسب' : 'الخسارة المحتسبة'],  
                 [4, 'إجمالي الصندوق العام التراكمي (كامل المجمع)', globalTotalBalance, 'السيولة العامة لكامل عمارات السكن المشترك']  
             ];  
-              
             const wsAcc = XLSX.utils.aoa_to_sheet(accountsData);  
             wsAcc['!views'] = [{RTL: true}];  
             wsAcc['!cols'] = [{wch:6},{wch:45},{wch:25},{wch:55}];  
@@ -839,9 +734,9 @@
         initYearSelector();  
         initSync();  
         await updateAllDataUltraSmart();  
-          
         setInterval(updateAllDataUltraSmart, 5000);  
     })();  
     </script>  
 </body>  
 </html>
+   

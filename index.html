@@ -74,25 +74,83 @@
         .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
         .data-table tr:hover td { background: var(--light); }
 
-        .receipt-wrapper { padding: 40px; background: white; }
-        .receipt-container { background: white; padding: 30px; border-radius: 4px; border: 2px solid #1a3e6f; max-width: 750px; margin: 0 auto; }
-        .receipt-header { text-align: center; border-bottom: 2px dashed #1a3e6f; padding-bottom: 15px; margin-bottom: 25px; }
-        .receipt-header h2 { color: #1a3e6f; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        .receipt-header h3 { color: #1a3e6f; font-size: 16px; margin-bottom: 5px; }
-        .receipt-header p { color: #333; font-size: 14px; }
-        .receipt-title { text-align: center; margin: 20px 0; }
-        .receipt-title h3 { color: #1a3e6f; font-size: 22px; font-weight: bold; }
-        .receipt-row { display: flex; margin-bottom: 14px; align-items: center; }
-        .receipt-label { width: 180px; font-weight: bold; color: #1a3e6f; font-size: 16px; flex-shrink: 0; }
-        .receipt-value { flex: 1; padding: 8px 15px; background: #f4f7fc; border-radius: 4px; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-        .receipt-arrow { font-size: 20px; color: #1a3e6f; font-weight: bold; }
-        .qr-section { display: flex; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc; }
-        .qr-container { text-align: center; }
-        .qr-container canvas { width: 100px !important; height: 100px !important; }
-        .receipt-signature { margin-top: 30px; display: flex; justify-content: flex-start; }
-        .signature-box { text-align: center; width: 40%; }
-        .signature-box .line { margin-top: 30px; border-top: 1px solid #333; padding-top: 8px; }
-        .receipt-footer { margin-top: 25px; text-align: center; font-size: 12px; color: #666; border-top: 1px dashed #ccc; padding-top: 15px; }
+        /* نموذج الوصل الجديد المطابق للصورة */
+        .syndic-receipt {
+            margin: 0 auto;
+            background: white;
+        }
+        .syndic-receipt .page {
+            width: 794px;
+            margin: auto;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 8px;
+        }
+        .syndic-receipt .header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .syndic-receipt .title {
+            text-align: center;
+            font-size: 28px;
+            color: #0aa;
+            margin: 25px 0 10px;
+            font-weight: bold;
+        }
+        .syndic-receipt .num {
+            text-align: right;
+            color: red;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .syndic-receipt .row {
+            display: flex;
+            align-items: center;
+            margin: 14px 0;
+        }
+        .syndic-receipt .label-ar {
+            width: 140px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .syndic-receipt .label-fr {
+            width: 160px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .syndic-receipt .line {
+            flex: 1;
+            border-bottom: 1px dotted #000;
+            margin: 0 10px;
+            height: 20px;
+        }
+        .syndic-receipt .period {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .syndic-receipt .checks {
+            margin-top: 15px;
+        }
+        .syndic-receipt .box {
+            width: 14px;
+            height: 14px;
+            border: 1px solid black;
+            display: inline-block;
+            margin: 0 5px;
+            text-align: center;
+            line-height: 12px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .syndic-receipt .footer {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
@@ -118,14 +176,18 @@
         .month-checkbox input { width: 18px; height: 18px; accent-color: var(--green); }
         .offline-badge { position: fixed; bottom: 20px; left: 20px; background: var(--green); color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; align-items: center; gap: 8px; }
         .sync-status { position: fixed; bottom: 20px; right: 20px; background: #1a3e6f; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .btn-dashboard { background: #6a1b9a; color: white; border: none; margin-right: 10px; }
         @media (max-width: 768px) {
             .app-container { flex-direction: column; } .sidebar { width: 100%; height: auto; }
             .nav-menu { display: flex; overflow-x: auto; padding: 10px; } .nav-menu li { white-space: nowrap; flex-shrink: 0; }
             .content { padding: 15px; } .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .login-container { width: 95%; margin: 10px; padding: 25px; }
-            .receipt-row { flex-direction: column; align-items: flex-start; } .receipt-label { width: 100%; margin-bottom: 5px; }
+            .syndic-receipt .page { width: 100%; padding: 15px; }
+            .syndic-receipt .row { flex-direction: column; align-items: flex-start; }
+            .syndic-receipt .label-ar, .syndic-receipt .label-fr { width: 100%; margin-bottom: 5px; }
+            .syndic-receipt .line { width: 100%; margin: 5px 0; }
         }
-        @media print { .sidebar, .top-bar, .modal, .edit-modal, .no-print { display: none !important; } .content { margin: 0; padding: 0; } body { background: white; } .receipt-wrapper { padding: 0; } }
+        @media print { .sidebar, .top-bar, .modal, .edit-modal, .no-print { display: none !important; } .content { margin: 0; padding: 0; } body { background: white; } .syndic-receipt .page { margin: 0; padding: 10px; } }
     </style>
 </head>
 <body>
@@ -238,7 +300,16 @@
             </ul>
         </nav>
         <main class="content">
-            <header class="top-bar"><h1 class="lang" data-ar="لوحة تحكم الأدمن" data-fr="Tableau de Bord">لوحة تحكم الأدمن</h1><div style="display:flex;gap:10px;align-items:center;"><button class="btn btn-success btn-sm" onclick="exportAllData()">📤</button><button class="btn btn-warning btn-sm" onclick="toggleImportSection()">📥</button><button class="btn btn-outline btn-sm" onclick="goBackToLogin()">🔙 <span class="lang" data-ar="الرجوع" data-fr="Retour">الرجوع</span></button><div class="date-display" id="adminDate"></div></div></header>
+            <header class="top-bar">
+                <h1 class="lang" data-ar="لوحة تحكم الأدمن" data-fr="Tableau de Bord">لوحة تحكم الأدمن</h1>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button class="btn btn-dashboard btn-sm" onclick="window.location.href='dashboard.html'">📊 Dashboard (العمارات)</button>
+                    <button class="btn btn-success btn-sm" onclick="exportAllData()">📤</button>
+                    <button class="btn btn-warning btn-sm" onclick="toggleImportSection()">📥</button>
+                    <button class="btn btn-outline btn-sm" onclick="goBackToLogin()">🔙 <span class="lang" data-ar="الرجوع" data-fr="Retour">الرجوع</span></button>
+                    <div class="date-display" id="adminDate"></div>
+                </div>
+            </header>
             <div id="importSectionAdmin" style="display:none;margin-bottom:15px;background:white;padding:15px;border-radius:12px;"><input type="text" id="importLinkAdmin" placeholder="https://..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-bottom:5px;"><button class="btn btn-success lang" data-ar="📥 تأكيد الاستيراد" data-fr="📥 Confirmer" onclick="importAllData()" style="width:100%;">📥 تأكيد الاستيراد</button></div>
             <div id="adminPageContent"></div>
         </main>
@@ -852,8 +923,10 @@ async function showPaymentForm(id) {
     }
     
     const defaultAmount = s.monthlyFee;
+    const currentCounter = db.receiptCounter + 1;
+    const defaultReceiptNumber = currentCounter >= (db.settings.receiptStartNumber||30) ? currentCounter : (db.settings.receiptStartNumber||30);
     
-    document.getElementById('paymentFormContainer').innerHTML=`<div class="info-card"><div style="display:flex;justify-content:space-between;align-items:center;padding:15px;background:var(--light);border-radius:10px;margin-bottom:20px;"><span><strong>${r.name}</strong> - ${t('شقة','Appt')} ${r.appt||''} (${t('عمارة','Bât')} ${r.building||'C'})</span><span>💰 ${t('المستحق','Dû')}: <strong>${s.totalDue} DH</strong> | 📅 ${t('التالي','Prochain')}: <strong>${s.nextDueMonth}</strong></span></div>${uh}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;"><div class="input-group"><label>📆 ${t('من','Du')}</label><input type="date" id="payPeriodFrom" value="${startDate}" onchange="updateAmountFromDates()"></div><div class="input-group"><label>📆 ${t('إلى','Au')}</label><input type="date" id="payPeriodTo" onchange="updateAmountFromDates()"></div><div class="input-group"><label>💵 ${t('المبلغ','Montant')}</label><input type="number" id="payAmount" value="${defaultAmount}" oninput="updateDatesFromAmount()"></div><div class="input-group"><label>💳 ${t('الطريقة','Mode')}</label><select id="payMethod"><option value="cash">💵 ${t('نقداً','Espèces')}</option><option value="check">📝 ${t('شيك','Chèque')}</option><option value="bank">🏦 ${t('بنكي','Virement')}</option></select></div><div class="input-group"><label>📅 ${t('تاريخ الدفع','Date')}</label><input type="date" id="payDate" value="${today.toISOString().split('T')[0]}"></div></div><div style="display:flex;gap:15px;margin-top:20px;"><button class="btn btn-success" onclick="confirmAndSave('${r.id}')">💾 ${t('حفظ وإصدار وصل','Enregistrer')}</button><button class="btn btn-outline" onclick="selectedResident=null;renderAdminPage()">${t('إلغاء','Annuler')}</button></div></div>`;
+    document.getElementById('paymentFormContainer').innerHTML=`<div class="info-card"><div style="display:flex;justify-content:space-between;align-items:center;padding:15px;background:var(--light);border-radius:10px;margin-bottom:20px;"><span><strong>${r.name}</strong> - ${t('شقة','Appt')} ${r.appt||''} (${t('عمارة','Bât')} ${r.building||'C'})</span><span>💰 ${t('المستحق','Dû')}: <strong>${s.totalDue} DH</strong> | 📅 ${t('التالي','Prochain')}: <strong>${s.nextDueMonth}</strong></span></div>${uh}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;"><div class="input-group"><label>📆 ${t('من','Du')}</label><input type="date" id="payPeriodFrom" value="${startDate}" onchange="updateAmountFromDates()"></div><div class="input-group"><label>📆 ${t('إلى','Au')}</label><input type="date" id="payPeriodTo" onchange="updateAmountFromDates()"></div><div class="input-group"><label>💵 ${t('المبلغ','Montant')}</label><input type="number" id="payAmount" value="${defaultAmount}" oninput="updateDatesFromAmount()"></div><div class="input-group"><label>🔢 ${t('رقم الوصل','Numéro Reçu')}</label><input type="number" id="receiptNumberInput" value="${defaultReceiptNumber}" onchange="updateReceiptNumberHint()"></div><div class="input-group"><label>💳 ${t('الطريقة','Mode')}</label><select id="payMethod"><option value="cash">💵 ${t('نقداً','Espèces')}</option><option value="check">📝 ${t('شيك','Chèque')}</option><option value="bank">🏦 ${t('بنكي','Virement')}</option></select></div><div class="input-group"><label>📅 ${t('تاريخ الدفع','Date')}</label><input type="date" id="payDate" value="${today.toISOString().split('T')[0]}"></div></div><div style="display:flex;gap:15px;margin-top:20px;"><button class="btn btn-success" onclick="confirmAndSave('${r.id}')">💾 ${t('حفظ وإصدار وصل','Enregistrer')}</button><button class="btn btn-outline" onclick="selectedResident=null;renderAdminPage()">${t('إلغاء','Annuler')}</button></div></div>`;
     
     if (unpaid.length > 0) {
         updateAmountFromMonths();
@@ -861,6 +934,11 @@ async function showPaymentForm(id) {
         updateDatesFromAmount();
     }
 }
+
+window.updateReceiptNumberHint = function() {
+    const input = document.getElementById('receiptNumberInput');
+    if (input) input.style.border = "2px solid var(--green)";
+};
 
 async function updateAmountFromDates() { 
     const f=document.getElementById('payPeriodFrom')?.value;
@@ -924,18 +1002,24 @@ window.confirmAndSave = async function(id) {
     const amount=parseFloat(document.getElementById('payAmount').value);
     const method=document.getElementById('payMethod').value;
     const date=document.getElementById('payDate').value; 
+    let receiptNumber = parseInt(document.getElementById('receiptNumberInput').value);
+    
     if(!amount||amount<=0)return alert('❌ '+t('مبلغ غير صحيح','Montant invalide')); 
+    if(!receiptNumber || receiptNumber < 1) receiptNumber = (db.receiptCounter || 0) + 1;
+    
+    if (db.users.some(u => u.payments && u.payments.some(p => p.receiptNumber === receiptNumber))) {
+        if(!confirm(t('⚠️ رقم الوصل موجود مسبقاً، هل تريد الاستمرار؟', '⚠️ Ce numéro existe déjà, continuer ?'))) return;
+    }
+    
     paymentPending=true; 
     
-    if(!db.receiptCounter||db.receiptCounter<(db.settings.receiptStartNumber||30))db.receiptCounter=db.settings.receiptStartNumber||30; 
-    const receiptNumber=db.receiptCounter+1; 
     const ml={cash:t('نقداً','Espèces'),check:t('شيك','Chèque'),bank:t('تحويل','Virement')}; 
     
     document.getElementById('confirmDetails').innerHTML=`<p><strong>🧾 ${t('رقم الوصل','N°')}:</strong> ${String(receiptNumber).padStart(7,'0')}</p><p><strong>👤 ${t('الساكن','Résident')}:</strong> ${r.name}</p><p><strong>📆 ${t('الفترة','Période')}:</strong> ${formatDateAR(from)} → ${formatDateAR(to)}</p><p><strong>📅 ${t('تاريخ الدفع','Date de paiement')}:</strong> ${date}</p><p><strong>💰 ${t('المبلغ','Montant')}:</strong> ${amount} DH</p><p><strong>💳 ${t('الطريقة','Mode')}:</strong> ${ml[method]}</p>`; 
     document.getElementById('confirmOverlay').classList.add('active'); 
     
     document.getElementById('confirmYesBtn').onclick=async function(){
-        db.receiptCounter=receiptNumber;
+        if (db.receiptCounter < receiptNumber) db.receiptCounter = receiptNumber;
         if(!r.payments)r.payments=[];
         r.payments.push({receiptNumber,amount,method,date,periodFrom:from,periodTo:to});
         await saveDB(db);
@@ -963,25 +1047,108 @@ window.showReceipt = async function(rid, num) {
     showReceiptModal(r, p); 
 };
 
-// ==================== RECEIPT PRINT & PDF & WHATSAPP ====================
+// ==================== RECEIPT الجديد فقط ====================
 let currentReceiptData = null;
 
 async function showReceiptModal(r, p) { 
     const db = await getDB(); 
     currentReceiptData = { resident: r, payment: p }; 
     const ml = { cash: t('نقداً','Espèces'), check: t('شيك','Chèque'), bank: t('تحويل','Virement') }; 
-    const qrData = `Bayti Sakan C\nRecu: ${String(p.receiptNumber).padStart(7,'0')}\nNom: ${r.name}\nAppt: ${r.appt||''}\nBat: ${r.building||'C'}\nMontant: ${p.amount} DH\nPeriode: ${p.periodFrom} - ${p.periodTo}\nDate: ${p.date}`; 
-    document.getElementById('receiptContent').innerHTML = `<div class="receipt-wrapper"><div class="receipt-container" id="receiptPrintArea"><div class="receipt-header"><h2>${db.settings.buildingName}</h2><h3>Union des Copropriétaires Bayti Sakan C</h3><p>${t('الحي المحمدي أكادير','Hay Mohammadi, Agadir')}</p></div><div class="receipt-title"><h3>${t('وصل أداء واجب السنديك','Reçu de paiement')}</h3></div><div class="receipt-row"><span class="receipt-label">N° Reçu</span><span class="receipt-value"><strong>${String(p.receiptNumber).padStart(7,'0')}</strong></span></div><div class="receipt-row"><span class="receipt-label">${t('المبلغ','Montant')}</span><span class="receipt-value">${p.amount} ${t('درهم','DH')}</span></div><div class="receipt-row"><span class="receipt-label">${t('المدة','Période')}</span><span class="receipt-value">${formatDateAR(p.periodFrom)} <span class="receipt-arrow">→</span> ${formatDateAR(p.periodTo)}</span></div><div class="receipt-row"><span class="receipt-label">${t('تاريخ الدفع','Date')}</span><span class="receipt-value">${p.date}</span></div><div class="receipt-row"><span class="receipt-label">${t('الإسم','Nom')}</span><span class="receipt-value">${r.name}</span></div><div class="receipt-row"><span class="receipt-label">${t('الشقة','Appt')}</span><span class="receipt-value">${r.appt||''}</span></div><div class="receipt-row"><span class="receipt-label">${t('العمارة','Bâtiment')}</span><span class="receipt-value">${r.building||'C'}</span></div><div class="receipt-row"><span class="receipt-label">${t('الطريقة','Mode')}</span><span class="receipt-value">${ml[p.method]}</span></div><div class="receipt-row"><span class="receipt-label">${t('القابض','Syndic')}</span><span class="receipt-value">${db.settings.syndicName}</span></div><div class="receipt-signature"><div class="signature-box"><div>${t('توقيع القابض','Signature')}</div><div class="line">_________________</div></div></div><div class="qr-section"><div class="qr-container"><div id="receiptQR"></div><small>QR Code</small></div></div><div class="receipt-footer"><p>${t('اتحاد المالك المشتركين','Union des Copropriétaires')} Bayti Sakan C - ${t('الحي المحمدي أكادير','Hay Mohammadi, Agadir')}</p></div></div></div>`; 
-    setTimeout(() => { const q = document.getElementById('receiptQR'); if (q && window.QRCode) { q.innerHTML = ''; new QRCode(q, { text: qrData, width: 100, height: 100, colorDark: '#1a3e6f', colorLight: '#ffffff' }); } }, 200); 
+    
+    // استدعاء اسم القابض (السنديك) من إعدادات النظام تلقائياً
+    const collectorName = db.settings.syndicName || 'مدير النظام';
+    
+    // تحديد رموز الاختيار لطريقة الدفع تلقائياً ليتم طباعتها بشكل صحيح
+    let cashMark = (p.method === 'cash') ? '✔' : '';
+    let checkMark = (p.method === 'check') ? '✔' : '';
+    let bankMark = (p.method === 'bank') ? '✔' : '';
+    
+    document.getElementById('receiptContent').innerHTML = `
+    <div class="syndic-receipt">
+        <div class="page">
+            <div class="header">
+                <div>
+                    Union des Copropriétaires<br>
+                    Bayti Sakan C<br>
+                    Hay Mohamadi Agadir
+                </div>
+                <div style="text-align:right;">
+                    اتحاد الملاك المشتركين<br>
+                    بيتي سكن C<br>
+                    الحي المحمدي أكادير
+                </div>
+            </div>
+            <div class="title">وصل أداء واجب السنديك</div>
+            <div class="num">${String(p.receiptNumber).padStart(7,'0')}</div>
+            <div class="row">
+                <div class="label-ar">تاريخ الأداء :</div>
+                <div class="line">${p.date}</div>
+                <div class="label-fr">Date de Paiement :</div>
+            </div>
+            <div class="row">
+                <div class="label-ar">الإسم :</div>
+                <div class="line">${r.name}</div>
+                <div class="label-fr">Nom :</div>
+            </div>
+            <div class="row">
+                <div class="label-ar">الشقة :</div>
+                <div class="line">${r.appt||''}</div>
+                <div class="label-fr">Appartement :</div>
+            </div>
+            <div class="row">
+                <div class="label-ar">العمارة :</div>
+                <div class="line">${r.building||'C'}</div>
+                <div class="label-fr">Immeuble :</div>
+            </div>
+            <div class="row">
+                <div class="label-ar">المبلغ :</div>
+                <div class="line">${p.amount} DH</div>
+                <div class="label-fr">Montant :</div>
+            </div>
+            <div class="period">
+                <div>
+                    من <span class="line" style="width:120px; display:inline-block;">${p.periodFrom}</span>
+                    إلى <span class="line" style="width:120px; display:inline-block;">${p.periodTo}</span>
+                </div>
+                <div> : المدة</div>
+            </div>
+            <div class="checks">
+                <label><span class="box">${cashMark}</span> نقدا</label>
+                <label><span class="box">${checkMark}</span> شيك رقم</label>
+                <label><span class="box">${bankMark}</span> إيداع بنكي</label>
+            </div>
+            <div class="footer">
+                <div>
+                    القابض<br>
+                    <strong style="display:inline-block; margin-top:5px; color:var(--primary);">${collectorName}</strong><br><br>
+                    Signature
+                </div>
+                <div>
+                    التوقيع
+                </div>
+            </div>
+        </div>
+    </div>`; 
+    
     document.getElementById('receiptModal').classList.add('active'); 
 }
 
-window.printReceipt = function() { window.print(); };
+window.printReceipt = function() { 
+    const printWindow = window.open('', '_blank');
+    const content = document.querySelector('.syndic-receipt').cloneNode(true);
+    printWindow.document.write('<html><head><title>Reçu</title><style>body { font-family: Arial, sans-serif; padding: 20px; } .syndic-receipt .page { width: 794px; margin: auto; padding: 20px 30px; background: white; border-radius: 8px; } .syndic-receipt .header { display: flex; justify-content: space-between; font-size: 13px; line-height: 1.6; } .syndic-receipt .title { text-align: center; font-size: 28px; color: #0aa; margin: 25px 0 10px; font-weight: bold; } .syndic-receipt .num { text-align: right; color: red; font-size: 28px; margin-bottom: 10px; } .syndic-receipt .row { display: flex; align-items: center; margin: 14px 0; } .syndic-receipt .label-ar { width: 140px; text-align: right; font-weight: bold; } .syndic-receipt .label-fr { width: 160px; text-align: left; font-weight: bold; } .syndic-receipt .line { flex: 1; border-bottom: 1px dotted #000; margin: 0 10px; height: 20px; } .syndic-receipt .period { display: flex; justify-content: space-between; margin-top: 10px; } .syndic-receipt .checks { margin-top: 15px; } .syndic-receipt .box { width: 14px; height: 14px; border: 1px solid black; display: inline-block; margin: 0 5px; text-align: center; line-height: 12px; font-weight: bold; font-size: 12px; } .syndic-receipt .footer { margin-top: 60px; display: flex; justify-content: space-between; font-size: 14px; } @media print { body { margin: 0; } .syndic-receipt .page { margin: 0; } }</style></head><body>');
+    printWindow.document.write(content.outerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+};
+
 window.downloadReceiptPDF = function() {
-    const element = document.getElementById('receiptPrintArea');
+    const element = document.querySelector('.syndic-receipt');
     const opt = { margin: 10, filename: `Recu_${currentReceiptData.payment.receiptNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save();
 };
+
 window.sendWhatsApp = async function() {
     const db = await getDB();
     const phone = currentReceiptData.resident.phone || db.settings.phone;
@@ -989,7 +1156,7 @@ window.sendWhatsApp = async function() {
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
 };
 
-// ==================== PEER-TO-PEER SYNC (BroadcastChannel & Storage) ====================
+// ==================== PEER-TO-PEER SYNC ====================
 let syncChannel = null;
 let mySyncId = '';
 
@@ -1008,10 +1175,7 @@ async function initSync() {
             const merged = mergeDatabases(currentDb, remoteData.db);
             merged.syncId = mySyncId;
             await setToDB('residentsDB', merged);
-            
-            // إظهار تنبيه نجاح التزامن الفوري للمستخدم
             alert('🔔 ' + t('تم التزامن بنجاح مع الجهاز الآخر وتحديث البيانات!', 'Synchronisation réussie avec l\'autre appareil!'));
-            
             if (document.getElementById('adminScreen').classList.contains('active')) {
                 renderAdminPage();
             } else if (document.getElementById('dashboardScreen').classList.contains('active')) {
