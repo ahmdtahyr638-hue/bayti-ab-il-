@@ -74,20 +74,25 @@
         .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
         .data-table tr:hover td { background: var(--light); }
 
-        /* نموذج الوصل الجديد - على صورة الخلفية */
-        .receipt-wrapper { padding: 20px; background: #f1f2f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .receipt-container { position: relative; width: 800px; margin: 0 auto; }
-        .receipt-container img { width: 100%; display: block; }
-        .receipt-field { position: absolute; font-size: 14px; font-weight: bold; }
-        /* إحداثيات الحقول حسب الصورة */
-        .receipt-field.num { top: 90px; right: 40px; color: red; font-size: 24px; }
-        .receipt-field.date { top: 150px; right: 120px; }
-        .receipt-field.name { top: 190px; right: 120px; }
-        .receipt-field.app { top: 230px; right: 120px; }
-        .receipt-field.imm { top: 230px; left: 120px; }
-        .receipt-field.amount { top: 270px; right: 120px; }
-        .receipt-field.from { top: 310px; right: 140px; }
-        .receipt-field.to { top: 310px; left: 140px; }
+        .receipt-wrapper { padding: 40px; background: white; }
+        .receipt-container { background: white; padding: 30px; border-radius: 4px; border: 2px solid #1a3e6f; max-width: 750px; margin: 0 auto; }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #1a3e6f; padding-bottom: 15px; margin-bottom: 25px; }
+        .receipt-header h2 { color: #1a3e6f; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+        .receipt-header h3 { color: #1a3e6f; font-size: 16px; margin-bottom: 5px; }
+        .receipt-header p { color: #333; font-size: 14px; }
+        .receipt-title { text-align: center; margin: 20px 0; }
+        .receipt-title h3 { color: #1a3e6f; font-size: 22px; font-weight: bold; }
+        .receipt-row { display: flex; margin-bottom: 14px; align-items: center; }
+        .receipt-label { width: 180px; font-weight: bold; color: #1a3e6f; font-size: 16px; flex-shrink: 0; }
+        .receipt-value { flex: 1; padding: 8px 15px; background: #f4f7fc; border-radius: 4px; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .receipt-arrow { font-size: 20px; color: #1a3e6f; font-weight: bold; }
+        .qr-section { display: flex; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc; }
+        .qr-container { text-align: center; }
+        .qr-container canvas { width: 100px !important; height: 100px !important; }
+        .receipt-signature { margin-top: 30px; display: flex; justify-content: flex-start; }
+        .signature-box { text-align: center; width: 40%; }
+        .signature-box .line { margin-top: 30px; border-top: 1px solid #333; padding-top: 8px; }
+        .receipt-footer { margin-top: 25px; text-align: center; font-size: 12px; color: #666; border-top: 1px dashed #ccc; padding-top: 15px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
@@ -113,13 +118,12 @@
         .month-checkbox input { width: 18px; height: 18px; accent-color: var(--green); }
         .offline-badge { position: fixed; bottom: 20px; left: 20px; background: var(--green); color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; align-items: center; gap: 8px; }
         .sync-status { position: fixed; bottom: 20px; right: 20px; background: #1a3e6f; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; z-index: 9999; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .btn-dashboard { background: #6a1b9a; color: white; border: none; margin-right: 10px; }
         @media (max-width: 768px) {
             .app-container { flex-direction: column; } .sidebar { width: 100%; height: auto; }
             .nav-menu { display: flex; overflow-x: auto; padding: 10px; } .nav-menu li { white-space: nowrap; flex-shrink: 0; }
             .content { padding: 15px; } .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .login-container { width: 95%; margin: 10px; padding: 25px; }
-            .receipt-container { width: 95%; } .receipt-field { font-size: 10px; }
+            .receipt-row { flex-direction: column; align-items: flex-start; } .receipt-label { width: 100%; margin-bottom: 5px; }
         }
         @media print { .sidebar, .top-bar, .modal, .edit-modal, .no-print { display: none !important; } .content { margin: 0; padding: 0; } body { background: white; } .receipt-wrapper { padding: 0; } }
     </style>
@@ -128,6 +132,7 @@
 
 <div class="offline-badge" id="offlineBadge">🟢 <span class="lang" data-ar="متاح بدون إنترنت" data-fr="Disponible hors ligne">متاح بدون إنترنت</span></div>
 <div class="sync-status" id="syncStatus" onclick="manualSync()" title="مزامنة يدوية">🔄 <span>مزامنة</span></div>
+
 <div id="loginScreen" class="screen login-body active">
     <div class="login-bg-pattern"></div>
     <div class="login-container">
@@ -176,7 +181,7 @@
 </div>
 
 <div id="receiptModal" class="modal">
-    <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;" class="no-print"><h3>🧾 <span class="lang" data-ar="معاينة الوصل" data-fr="Aperçu du reçu">معاينة الوصل</span></h3><button class="btn btn-outline btn-sm" onclick="closeReceiptAndRefresh()">🔙 <span class="lang" data-ar="عودة" data-fr="Retour">عودة</span></button></div>
         <div id="receiptContent"></div>
         <div style="display:flex;gap:15px;justify-content:center;margin-top:20px;flex-wrap:wrap;" class="no-print">
@@ -233,21 +238,13 @@
             </ul>
         </nav>
         <main class="content">
-            <header class="top-bar">
-                <h1 class="lang" data-ar="لوحة تحكم الأدمن" data-fr="Tableau de Bord">لوحة تحكم الأدمن</h1>
-                <div style="display:flex;gap:10px;align-items:center;">
-                    <button class="btn btn-dashboard btn-sm" onclick="window.location.href='dashboard.html'">📊 Dashboard (العمارات)</button>
-                    <button class="btn btn-success btn-sm" onclick="exportAllData()">📤</button>
-                    <button class="btn btn-warning btn-sm" onclick="toggleImportSection()">📥</button>
-                    <button class="btn btn-outline btn-sm" onclick="goBackToLogin()">🔙 <span class="lang" data-ar="الرجوع" data-fr="Retour">الرجوع</span></button>
-                    <div class="date-display" id="adminDate"></div>
-                </div>
-            </header>
+            <header class="top-bar"><h1 class="lang" data-ar="لوحة تحكم الأدمن" data-fr="Tableau de Bord">لوحة تحكم الأدمن</h1><div style="display:flex;gap:10px;align-items:center;"><button class="btn btn-success btn-sm" onclick="exportAllData()">📤</button><button class="btn btn-warning btn-sm" onclick="toggleImportSection()">📥</button><button class="btn btn-outline btn-sm" onclick="goBackToLogin()">🔙 <span class="lang" data-ar="الرجوع" data-fr="Retour">الرجوع</span></button><div class="date-display" id="adminDate"></div></div></header>
             <div id="importSectionAdmin" style="display:none;margin-bottom:15px;background:white;padding:15px;border-radius:12px;"><input type="text" id="importLinkAdmin" placeholder="https://..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-bottom:5px;"><button class="btn btn-success lang" data-ar="📥 تأكيد الاستيراد" data-fr="📥 Confirmer" onclick="importAllData()" style="width:100%;">📥 تأكيد الاستيراد</button></div>
             <div id="adminPageContent"></div>
         </main>
     </div>
 </div>
+
 <script>
 // ==================== INDEXEDDB DATABASE ====================
 const DB_NAME = 'BaytiSakanDB';
@@ -318,7 +315,7 @@ function setLanguage(lang) {
 }
 function t(a, f) { return currentLang === 'ar' ? a : f; }
 
-// ==================== DATABASE FUNCTIONS ====================
+// ==================== DATABASE FUNCTIONS (ASYNC) ====================
 const DEFAULT_MONTHLY_FEE = 125;
 
 async function initializeDB() {
@@ -326,7 +323,7 @@ async function initializeDB() {
     if (!existing) {
         const d = {
             users: [
-                { id: 'a', password: 'a', role: 'admin', name: 'مدير النظام' },
+                { id: 'a', password: 'a123', role: 'admin', name: 'مدير النظام' },
                 { id: 'sakine1', password: '123', role: 'resident', name: 'رشيد دهدود', appt: '2', building: '9', phone: '0612345678', joinDate: '2024-01-01', propRef: '', payments: [] }
             ],
             settings: { monthlyFee: DEFAULT_MONTHLY_FEE, buildingName: 'بيتي سكن C', syndicName: 'Rachid', receiptStartNumber: 30, phone: '212600000000', initialBalance: 0, expenseCategories: ['كهرباء', 'أجر الحارس', 'مواد تنظيف', 'إصلاحات', 'أخرى'] },
@@ -376,7 +373,7 @@ function getAllCoveredMonths(resident) {
         resident.payments.forEach(p => {
             if (p.periodFrom && p.periodTo) {
                 getMonthsBetween(p.periodFrom, p.periodTo).forEach(m => {
-                    if (!covered.has(m.key) || new Date(p.date) > new Date(covered.get(m.key).paymentDate)) {
+                    if (!covered.has(m.key) || new Date(p.date) > new Date(covered.get(m.key).date)) {
                         covered.set(m.key, { ...m, paymentDate: p.date, receiptNumber: p.receiptNumber });
                     }
                 });
@@ -591,6 +588,7 @@ window.handleLogin = async function() {
         initResidentPanel(); 
     }
 };
+
 // ==================== EDIT RESIDENT ====================
 let currentEditingResidentId = null;
 
@@ -742,7 +740,7 @@ async function renderAdminPage() {
         c.innerHTML=`<h2>🧾 ${t('إدارة المصاريف','Dépenses')}</h2><div class="info-card"><h3 style="margin-bottom:15px;">➕ ${t('تسجيل مصروف جديد','Nouvelle dépense')}</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;"><div class="input-group"><label>${t('الوصف','Description')}</label><input id="expDesc"></div><div class="input-group"><label>${t('المبلغ','Montant')}</label><input type="number" id="expAmount"></div><div class="input-group"><label>${t('التاريخ','Date')}</label><input type="date" id="expDate" value="${new Date().toISOString().split('T')[0]}"></div><div class="input-group"><label>${t('الفئة','Catégorie')}</label><select id="expCategory">${cats.map(cat=>`<option>${cat}</option>`).join('')}</select></div></div><button class="btn btn-danger" onclick="addExpense()" style="margin-top:15px;">💸 ${t('تسجيل المصروف','Enregistrer')}</button></div><table class="data-table"><thead><tr><th>${t('التاريخ','Date')}</th><th>${t('الوصف','Description')}</th><th>${t('الفئة','Cat.')}</th><th>${t('المبلغ','Montant')}</th><th>${t('تعديل','Modif')}</th></tr></thead><tbody>${exps.length===0?`<tr><td colspan="5">${t('لا توجد مصاريف','Aucune')}</td></tr>`:exps.map((e, index)=>`<tr><td>${e.date}</td><td>${e.description}</td><td>${e.category||'---'}</td><td style="color:var(--red);">${e.amount} DH</td><td><button class="btn btn-warning btn-sm" onclick="editExpense(${index})">✏️</button></td></tr>`).join('')}</tbody></table>`; 
         break;
     case 'settings': 
-        c.innerHTML=`<h2>⚙️ ${t('الإعدادات','Paramètres')}</h2><div class="info-card"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;"><div class="input-group"><label>${t('اسم الإقامة','Nom')}</label><input id="buildingNameInput" value="${db.settings.buildingName}"></div><div class="input-group"><label>${t('السنديك','Syndic')}</label><input id="syndicNameInput" value="${db.settings.syndicName}"></div><div class="input-group"><label>${t('الاشتراك الشهري','Cotisation')}</label><input type="number" id="monthlyFeeInput" value="${db.settings.monthlyFee}"></div><div class="input-group"><label>WhatsApp</label><input id="phoneInput" value="${db.settings.phone||'212600000000'}"></div><div class="input-group"><label>${t('بداية ترقيم الوصلات','N° début')}</label><input type="number" id="receiptStartInput" value="${db.settings.receiptStartNumber}"><small style="color:#888;">${t('سيتم إعادة الترقيم','Redémarre')}</small></div><div class="input-group"><label>💰 ${t('المبلغ في الصندوق','Solde initial')} (DH)</label><input type="number" id="initialBalanceInput" value="${db.settings.initialBalance||0}" step="0.01"><small style="color:#888;">${t('هذا المبلغ يضاف للمداخيل ويظهر في نظرة عامة','Ajouté aux revenus')}</small></div></div><div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border);"><label style="font-weight:bold;margin-bottom:10px;display:block;">📂 ${t('فئات المصاريف','Catégories de dépenses')} <small style="color:#888;">(${t('افصل بينها بفاصلة ","','Séparer par ","')})</small></label><input id="expenseCategoriesInput" value="${(db.settings.expenseCategories||['كهرباء','أجر الحارس','مواد تنظيف','إصلاحات','أخرى']).join(',')}" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);"></div><button class="btn btn-success" onclick="updateSettings()" style="margin-top:15px;">💾 ${t('حفظ','Sauvegarder')}</button></div>`; 
+        c.innerHTML=`<h2>⚙️ ${t('الإعدادات','Paramètres')}</h2><div class="info-card"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;"><div class="input-group"><label>${t('اسم الإقامة','Nom')}</label><input id="buildingNameInput" value="${db.settings.buildingName}"></div><div class="input-group"><label>${t('السنديك','Syndic')}</label><input id="syndicNameInput" value="${db.settings.syndicName}"></div><div class="input-group"><label>${t('الاشتراك الشهري','Cotisation')}</label><input type="number" id="monthlyFeeInput" value="${db.settings.monthlyFee}"></div><div class="input-group"><label>WhatsApp</label><input id="phoneInput" value="${db.settings.phone||'212600000000'}"></div><div class="input-group"><label>${t('بداية ترقيم الوصلات','N° début')}</label><input type="number" id="receiptStartInput" value="${db.settings.receiptStartNumber}"><small style="color:#888;">${t('سيتم إعادة الترقيم','Redéمارre')}</small></div><div class="input-group"><label>💰 ${t('المبلغ في الصندوق','Solde initial')} (DH)</label><input type="number" id="initialBalanceInput" value="${db.settings.initialBalance||0}" step="0.01"><small style="color:#888;">${t('هذا المبلغ يضاف للمداخيل ويظهر في نظرة عامة','Ajouté aux revenus')}</small></div></div><div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border);"><label style="font-weight:bold;margin-bottom:10px;display:block;">📂 ${t('فئات المصاريف','Catégories de dépenses')} <small style="color:#888;">(${t('افصل بينها بفاصلة ","','Séparer par ","')})</small></label><input id="expenseCategoriesInput" value="${(db.settings.expenseCategories||['كهرباء','أجر الحارس','مواد تنظيف','إصلاحات','أخرى']).join(',')}" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);"></div><button class="btn btn-success" onclick="updateSettings()" style="margin-top:15px;">💾 ${t('حفظ','Sauvegarder')}</button></div>`; 
         break;
     } 
 }
@@ -854,10 +852,8 @@ async function showPaymentForm(id) {
     }
     
     const defaultAmount = s.monthlyFee;
-    const currentCounter = db.receiptCounter + 1;
-    const defaultReceiptNumber = currentCounter >= (db.settings.receiptStartNumber||30) ? currentCounter : (db.settings.receiptStartNumber||30);
     
-    document.getElementById('paymentFormContainer').innerHTML=`<div class="info-card"><div style="display:flex;justify-content:space-between;align-items:center;padding:15px;background:var(--light);border-radius:10px;margin-bottom:20px;"><span><strong>${r.name}</strong> - ${t('شقة','Appt')} ${r.appt||''} (${t('عمارة','Bât')} ${r.building||'C'})</span><span>💰 ${t('المستحق','Dû')}: <strong>${s.totalDue} DH</strong> | 📅 ${t('التالي','Prochain')}: <strong>${s.nextDueMonth}</strong></span></div>${uh}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;"><div class="input-group"><label>📆 ${t('من','Du')}</label><input type="date" id="payPeriodFrom" value="${startDate}" onchange="updateAmountFromDates()"></div><div class="input-group"><label>📆 ${t('إلى','Au')}</label><input type="date" id="payPeriodTo" onchange="updateAmountFromDates()"></div><div class="input-group"><label>💵 ${t('المبلغ','Montant')}</label><input type="number" id="payAmount" value="${defaultAmount}" oninput="updateDatesFromAmount()"></div><div class="input-group"><label>🔢 ${t('رقم الوصل','Numéro Reçu')}</label><input type="number" id="receiptNumberInput" value="${defaultReceiptNumber}" onchange="updateReceiptNumberHint()"></div><div class="input-group"><label>💳 ${t('الطريقة','Mode')}</label><select id="payMethod"><option value="cash">💵 ${t('نقداً','Espèces')}</option><option value="check">📝 ${t('شيك','Chèque')}</option><option value="bank">🏦 ${t('بنكي','Virement')}</option></select></div><div class="input-group"><label>📅 ${t('تاريخ الدفع','Date')}</label><input type="date" id="payDate" value="${today.toISOString().split('T')[0]}"></div></div><div style="display:flex;gap:15px;margin-top:20px;"><button class="btn btn-success" onclick="confirmAndSave('${r.id}')">💾 ${t('حفظ وإصدار وصل','Enregistrer')}</button><button class="btn btn-outline" onclick="selectedResident=null;renderAdminPage()">${t('إلغاء','Annuler')}</button></div></div>`;
+    document.getElementById('paymentFormContainer').innerHTML=`<div class="info-card"><div style="display:flex;justify-content:space-between;align-items:center;padding:15px;background:var(--light);border-radius:10px;margin-bottom:20px;"><span><strong>${r.name}</strong> - ${t('شقة','Appt')} ${r.appt||''} (${t('عمارة','Bât')} ${r.building||'C'})</span><span>💰 ${t('المستحق','Dû')}: <strong>${s.totalDue} DH</strong> | 📅 ${t('التالي','Prochain')}: <strong>${s.nextDueMonth}</strong></span></div>${uh}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;"><div class="input-group"><label>📆 ${t('من','Du')}</label><input type="date" id="payPeriodFrom" value="${startDate}" onchange="updateAmountFromDates()"></div><div class="input-group"><label>📆 ${t('إلى','Au')}</label><input type="date" id="payPeriodTo" onchange="updateAmountFromDates()"></div><div class="input-group"><label>💵 ${t('المبلغ','Montant')}</label><input type="number" id="payAmount" value="${defaultAmount}" oninput="updateDatesFromAmount()"></div><div class="input-group"><label>💳 ${t('الطريقة','Mode')}</label><select id="payMethod"><option value="cash">💵 ${t('نقداً','Espèces')}</option><option value="check">📝 ${t('شيك','Chèque')}</option><option value="bank">🏦 ${t('بنكي','Virement')}</option></select></div><div class="input-group"><label>📅 ${t('تاريخ الدفع','Date')}</label><input type="date" id="payDate" value="${today.toISOString().split('T')[0]}"></div></div><div style="display:flex;gap:15px;margin-top:20px;"><button class="btn btn-success" onclick="confirmAndSave('${r.id}')">💾 ${t('حفظ وإصدار وصل','Enregistrer')}</button><button class="btn btn-outline" onclick="selectedResident=null;renderAdminPage()">${t('إلغاء','Annuler')}</button></div></div>`;
     
     if (unpaid.length > 0) {
         updateAmountFromMonths();
@@ -865,11 +861,6 @@ async function showPaymentForm(id) {
         updateDatesFromAmount();
     }
 }
-
-window.updateReceiptNumberHint = function() {
-    const input = document.getElementById('receiptNumberInput');
-    if (input) input.style.border = "2px solid var(--green)";
-};
 
 async function updateAmountFromDates() { 
     const f=document.getElementById('payPeriodFrom')?.value;
@@ -933,24 +924,18 @@ window.confirmAndSave = async function(id) {
     const amount=parseFloat(document.getElementById('payAmount').value);
     const method=document.getElementById('payMethod').value;
     const date=document.getElementById('payDate').value; 
-    let receiptNumber = parseInt(document.getElementById('receiptNumberInput').value);
-    
     if(!amount||amount<=0)return alert('❌ '+t('مبلغ غير صحيح','Montant invalide')); 
-    if(!receiptNumber || receiptNumber < 1) receiptNumber = (db.receiptCounter || 0) + 1;
-    
-    if (db.users.some(u => u.payments && u.payments.some(p => p.receiptNumber === receiptNumber))) {
-        if(!confirm(t('⚠️ رقم الوصل موجود مسبقاً، هل تريد الاستمرار؟', '⚠️ Ce numéro existe déjà, continuer ?'))) return;
-    }
-    
     paymentPending=true; 
     
+    if(!db.receiptCounter||db.receiptCounter<(db.settings.receiptStartNumber||30))db.receiptCounter=db.settings.receiptStartNumber||30; 
+    const receiptNumber=db.receiptCounter+1; 
     const ml={cash:t('نقداً','Espèces'),check:t('شيك','Chèque'),bank:t('تحويل','Virement')}; 
     
     document.getElementById('confirmDetails').innerHTML=`<p><strong>🧾 ${t('رقم الوصل','N°')}:</strong> ${String(receiptNumber).padStart(7,'0')}</p><p><strong>👤 ${t('الساكن','Résident')}:</strong> ${r.name}</p><p><strong>📆 ${t('الفترة','Période')}:</strong> ${formatDateAR(from)} → ${formatDateAR(to)}</p><p><strong>📅 ${t('تاريخ الدفع','Date de paiement')}:</strong> ${date}</p><p><strong>💰 ${t('المبلغ','Montant')}:</strong> ${amount} DH</p><p><strong>💳 ${t('الطريقة','Mode')}:</strong> ${ml[method]}</p>`; 
     document.getElementById('confirmOverlay').classList.add('active'); 
     
     document.getElementById('confirmYesBtn').onclick=async function(){
-        if (db.receiptCounter < receiptNumber) db.receiptCounter = receiptNumber;
+        db.receiptCounter=receiptNumber;
         if(!r.payments)r.payments=[];
         r.payments.push({receiptNumber,amount,method,date,periodFrom:from,periodTo:to});
         await saveDB(db);
@@ -978,48 +963,25 @@ window.showReceipt = async function(rid, num) {
     showReceiptModal(r, p); 
 };
 
-// ==================== RECEIPT - NEW STYLE (IMAGE BACKGROUND) ====================
+// ==================== RECEIPT PRINT & PDF & WHATSAPP ====================
 let currentReceiptData = null;
 
 async function showReceiptModal(r, p) { 
     const db = await getDB(); 
     currentReceiptData = { resident: r, payment: p }; 
     const ml = { cash: t('نقداً','Espèces'), check: t('شيك','Chèque'), bank: t('تحويل','Virement') }; 
-    
-    document.getElementById('receiptContent').innerHTML = `
-    <div class="receipt-wrapper">
-        <div class="receipt-container" id="receiptPrintArea">
-            <img src="receipt.jpg" alt="قالب الوصل" style="width:100%; display:block;">
-            <div class="receipt-field num">${String(p.receiptNumber).padStart(7,'0')}</div>
-            <div class="receipt-field date">${p.date}</div>
-            <div class="receipt-field name">${r.name}</div>
-            <div class="receipt-field app">${r.appt || ''}</div>
-            <div class="receipt-field imm">${r.building || 'C'}</div>
-            <div class="receipt-field amount">${p.amount} DH</div>
-            <div class="receipt-field from">${p.periodFrom}</div>
-            <div class="receipt-field to">${p.periodTo}</div>
-        </div>
-    </div>`;
-    
+    const qrData = `Bayti Sakan C\nRecu: ${String(p.receiptNumber).padStart(7,'0')}\nNom: ${r.name}\nAppt: ${r.appt||''}\nBat: ${r.building||'C'}\nMontant: ${p.amount} DH\nPeriode: ${p.periodFrom} - ${p.periodTo}\nDate: ${p.date}`; 
+    document.getElementById('receiptContent').innerHTML = `<div class="receipt-wrapper"><div class="receipt-container" id="receiptPrintArea"><div class="receipt-header"><h2>${db.settings.buildingName}</h2><h3>Union des Copropriétaires Bayti Sakan C</h3><p>${t('الحي المحمدي أكادير','Hay Mohammadi, Agadir')}</p></div><div class="receipt-title"><h3>${t('وصل أداء واجب السنديك','Reçu de paiement')}</h3></div><div class="receipt-row"><span class="receipt-label">N° Reçu</span><span class="receipt-value"><strong>${String(p.receiptNumber).padStart(7,'0')}</strong></span></div><div class="receipt-row"><span class="receipt-label">${t('المبلغ','Montant')}</span><span class="receipt-value">${p.amount} ${t('درهم','DH')}</span></div><div class="receipt-row"><span class="receipt-label">${t('المدة','Période')}</span><span class="receipt-value">${formatDateAR(p.periodFrom)} <span class="receipt-arrow">→</span> ${formatDateAR(p.periodTo)}</span></div><div class="receipt-row"><span class="receipt-label">${t('تاريخ الدفع','Date')}</span><span class="receipt-value">${p.date}</span></div><div class="receipt-row"><span class="receipt-label">${t('الإسم','Nom')}</span><span class="receipt-value">${r.name}</span></div><div class="receipt-row"><span class="receipt-label">${t('الشقة','Appt')}</span><span class="receipt-value">${r.appt||''}</span></div><div class="receipt-row"><span class="receipt-label">${t('العمارة','Bâtiment')}</span><span class="receipt-value">${r.building||'C'}</span></div><div class="receipt-row"><span class="receipt-label">${t('الطريقة','Mode')}</span><span class="receipt-value">${ml[p.method]}</span></div><div class="receipt-row"><span class="receipt-label">${t('القابض','Syndic')}</span><span class="receipt-value">${db.settings.syndicName}</span></div><div class="receipt-signature"><div class="signature-box"><div>${t('توقيع القابض','Signature')}</div><div class="line">_________________</div></div></div><div class="qr-section"><div class="qr-container"><div id="receiptQR"></div><small>QR Code</small></div></div><div class="receipt-footer"><p>${t('اتحاد المالك المشتركين','Union des Copropriétaires')} Bayti Sakan C - ${t('الحي المحمدي أكادير','Hay Mohammadi, Agadir')}</p></div></div></div>`; 
+    setTimeout(() => { const q = document.getElementById('receiptQR'); if (q && window.QRCode) { q.innerHTML = ''; new QRCode(q, { text: qrData, width: 100, height: 100, colorDark: '#1a3e6f', colorLight: '#ffffff' }); } }, 200); 
     document.getElementById('receiptModal').classList.add('active'); 
 }
 
-window.printReceipt = function() { 
-    const printWindow = window.open('', '_blank');
-    const content = document.getElementById('receiptPrintArea').cloneNode(true);
-    printWindow.document.write('<html><head><title>Reçu</title><style>body { margin: 0; padding: 20px; } .receipt-container { position: relative; width: 800px; margin: auto; } .receipt-container img { width: 100%; } .receipt-field { position: absolute; font-size: 14px; font-weight: bold; } .receipt-field.num { top: 90px; right: 40px; color: red; font-size: 24px; } .receipt-field.date { top: 150px; right: 120px; } .receipt-field.name { top: 190px; right: 120px; } .receipt-field.app { top: 230px; right: 120px; } .receipt-field.imm { top: 230px; left: 120px; } .receipt-field.amount { top: 270px; right: 120px; } .receipt-field.from { top: 310px; right: 140px; } .receipt-field.to { top: 310px; left: 140px; }</style></head><body>');
-    printWindow.document.write(content.outerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-};
-
+window.printReceipt = function() { window.print(); };
 window.downloadReceiptPDF = function() {
     const element = document.getElementById('receiptPrintArea');
     const opt = { margin: 10, filename: `Recu_${currentReceiptData.payment.receiptNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save();
 };
-
 window.sendWhatsApp = async function() {
     const db = await getDB();
     const phone = currentReceiptData.resident.phone || db.settings.phone;
@@ -1027,7 +989,7 @@ window.sendWhatsApp = async function() {
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
 };
 
-// ==================== PEER-TO-PEER SYNC ====================
+// ==================== PEER-TO-PEER SYNC (BroadcastChannel & Storage) ====================
 let syncChannel = null;
 let mySyncId = '';
 
@@ -1046,7 +1008,10 @@ async function initSync() {
             const merged = mergeDatabases(currentDb, remoteData.db);
             merged.syncId = mySyncId;
             await setToDB('residentsDB', merged);
+            
+            // إظهار تنبيه نجاح التزامن الفوري للمستخدم
             alert('🔔 ' + t('تم التزامن بنجاح مع الجهاز الآخر وتحديث البيانات!', 'Synchronisation réussie avec l\'autre appareil!'));
+            
             if (document.getElementById('adminScreen').classList.contains('active')) {
                 renderAdminPage();
             } else if (document.getElementById('dashboardScreen').classList.contains('active')) {

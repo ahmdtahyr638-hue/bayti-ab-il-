@@ -1,13 +1,28 @@
 {
-  "name": "بيتي سكن C - نظام التسيير",
-  "short_name": "بيتي سكن C",
-  "start_url": "index.html",
+  "name": "بيتي سكن C",
+  "short_name": "Bayti Sakan",
+  "description": "نظام تسيير الإقامة السكنية",
+  "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#1a3e6f",
   "theme_color": "#1a3e6f",
-  "icons": [{
-    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231a3e6f'/%3E%3Ctext x='96' y='110' text-anchor='middle' font-size='80' fill='white'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E",
-    "sizes": "192x192",
-    "type": "image/svg+xml"
-  }]
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231a3e6f'/%3E%3Ctext x='96' y='110' text-anchor='middle' font-size='80' fill='white'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231a3e6f'/%3E%3Ctext x='256' y='290' text-anchor='middle' font-size='200' fill='white'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "utilities"],
+  "prefer_related_applications": false
 }
