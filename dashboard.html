@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  
+    <meta name="theme-color" content="#1a3e6f">  
+    <meta name="apple-mobile-web-app-capable" content="yes">  
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">  
+    <meta name="apple-mobile-web-app-title" content="بيتي سكن C">  
+    <title>بيتي سكن C - العمارات</title>  
+    
+    <link rel="manifest" href="dashboard-manifest.json">  
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231a3e6f'/%3E%3Ctext x='96' y='110' text-anchor='middle' font-size='80' fill='white'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E">  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
+    <style>  
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }  
+        :root { --primary: #1a3e6f; --secondary: #2c5e9c; --light: #e8f0fe; --bg: #f4f7fc; --green: #0f7b4e; --red: #d32f2f; --orange: #ed6c02; --gold: #c9a96e; }  
+        body { background: linear-gradient(135deg, #0d1b2a 0%, #1a3e6f 40%, #2c5e9c 70%, #3a7bd5 100%); background-attachment: fixed; min-height: 100vh; }  
+        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }  
+        .header { text-align: center; margin-bottom: 35px; }  
+        .header .logo { font-size: 75px; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }  
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }  
+        .header h1 { color: white; font-size: 34px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }  
+        .header p { color: rgba(255,255,255,0.8); font-size: 16px; margin-top: 5px; }  
+        .nav-links { display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }  
+        .nav-link { color: white; background: rgba(255,255,255,0.2); padding: 10px 22px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: 0.3s; border: none; cursor: pointer; font-size: 14px; }  
+        .nav-link:hover { background: rgba(255,255,255,0.35); transform: translateY(-3px); }  
+        .year-selector { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0; }  
+        .year-selector label { color: white; font-weight: bold; font-size: 16px; }  
+        .year-selector select { padding: 10px 18px; border-radius: 10px; border: 2px solid white; font-size: 16px; font-weight: bold; background: white; color: var(--primary); cursor: pointer; }  
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin-bottom: 35px; }  
+        .stat-card { background: rgba(255,255,255,0.95); border-radius: 18px; padding: 25px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }  
+        .stat-card .icon { font-size: 36px; margin-bottom: 8px; }  
+        .stat-card .label { font-size: 13px; color: #666; margin-bottom: 8px; }  
+        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }  
+        .section-title { color: white; text-align: center; margin: 25px 0 18px; font-size: 20px; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }  
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 10px; margin-bottom: 35px; }  
+        .card { background: white; border-radius: 14px; padding: 18px 10px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 3px solid transparent; }  
+        .card:hover { transform: translateY(-6px); box-shadow: 0 12px 25px rgba(0,0,0,0.2); border-color: var(--gold); }  
+        .card.active { border-color: var(--primary); background: var(--light); transform: scale(1.04); }  
+        
+        .card.expense-card { border-color: rgba(211, 47, 47, 0.2); grid-column: span 2; display: flex; align-items: center; justify-content: center; padding: 15px; }  
+        .card.expense-card:hover { border-color: var(--red); }  
+        .card.expense-card.active { border-color: var(--red); background: #fdeded; }  
+        .card.accounts-card { border-color: rgba(15, 123, 78, 0.2); grid-column: span 2; display: flex; align-items: center; justify-content: center; padding: 15px; }  
+        .card.accounts-card:hover { border-color: var(--green); }  
+        .card.accounts-card.active { border-color: var(--green); background: #e3f7ec; }  
+        
+        .card .num { font-size: 30px; font-weight: 800; color: var(--primary); }  
+        .card .count { font-size: 13px; font-weight: bold; color: var(--secondary); margin-top: 6px; background: var(--light); padding: 4px 10px; border-radius: 18px; display: inline-block; }  
+        .card.expense-card .count, .card.accounts-card .count { font-size: 15px; padding: 8px 16px; margin-top: 0; }  
+        .card.expense-card .count { color: var(--red); background: #fdeded; }  
+        .card.accounts-card .count { color: var(--green); background: #e3f7ec; }  
+        
+        .detail { background: white; border-radius: 18px; padding: 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.3); display: none; animation: up 0.4s ease; }  
+        @keyframes up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }  
+        .detail.active { display: block; }  
+        .detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }  
+        .detail-head h2 { color: var(--primary); font-size: 24px; }  
+        .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }  
+        .btn { border: none; border-radius: 10px; font-weight: bold; cursor: pointer; padding: 10px 20px; color: white; transition: 0.2s; font-size: 13px; }  
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }  
+        .btn-p { background: var(--primary); }  
+        .btn-s { background: var(--green); }  
+        .btn-o { background: white; color: var(--primary); border: 2px solid var(--primary); }  
+        .table-wrap { overflow-x: auto; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 25px; }  
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 950px; }  
+        th { background: linear-gradient(135deg, #1a3e6f, #2c5e9c); color: white; font-weight: 600; padding: 13px 8px; text-align: center; font-size: 12px; white-space: nowrap; }  
+        td { padding: 10px 8px; border-bottom: 1px solid #e8e8e8; font-size: 12px; text-align: center; }  
+        tr:hover td { background: #f8faff; }  
+        tfoot tr.main-total td { font-weight: bold; background: #e8f0fe; font-size: 13px; border-top: 2px solid var(--primary); }  
+        tfoot tr.extra-calc td { font-weight: bold; background: #f4f7fc; color: #333; border-top: 1px dashed #ccc; font-size: 12px; }  
+        .badge { padding: 5px 10px; border-radius: 18px; font-size: 11px; font-weight: 600; }  
+        .badge-g { background: #e3f7ec; color: var(--green); }  
+        .badge-r { background: #fdeded; color: var(--red); }  
+        .badge-o { background: #fff3e0; color: var(--orange); }  
+        .text-g { color: var(--green); font-weight: bold; }  
+        .text-r { color: var(--red); font-weight: bold; }  
+        .empty { text-align: center; padding: 45px; color: #888; }  
+        .empty .icon { font-size: 55px; margin-bottom: 12px; }  
+        .offline { position: fixed; bottom: 18px; left: 18px; background: var(--green); color: white; padding: 8px 18px; border-radius: 25px; font-size: 12px; font-weight: bold; z-index: 9999; display: none; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }  
+        .sync-status { position: fixed; bottom: 18px; right: 18px; background: #1a3e6f; color: white; padding: 8px 18px; border-radius: 25px; font-size: 12px; font-weight: bold; z-index: 9999; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }  
+        @media (max-width: 768px) {  
+            .container { padding: 12px; }  
+            .grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 7px; }  
+            .card { padding: 12px 6px; }  
+            .card .num { font-size: 22px; }  
+            .card.expense-card, .card.accounts-card { grid-column: span 4; }  
+            .stats { grid-template-columns: repeat(2, 1fr); }  
+            table { font-size: 10px; min-width: 750px; }  
+            th, td { padding: 7px 4px; }  
+        }  
+        @media print {  
+            body { background: white; }  
+            .header, .grid, .detail-actions, .offline, .nav-links, .section-title, .year-selector, .sync-status { display: none !important; }  
+            .detail { display: block !important; box-shadow: none; padding: 0; animation: none; }  
+        }  
+    </style>  
+</head>  
+<body>  
+    <div class="offline" id="offlineBadge">🟢 متاح بدون إنترنت</div>  
+    <div class="sync-status" id="syncStatus" onclick="manualSync()" title="مزامنة يدوية">🔄 مزامنة</div>  
+    <div class="container">  
+        <div class="header">  
+            <div class="logo">🏢</div>  
+            <h1>بيتي سكن C</h1>  
+            <p>نظرة شاملة على جميع العمارات (32 عمارة)</p>  
+            <div class="nav-links">  
+                <a href="/" class="nav-link">🔙 نظام التسيير</a>  
+                <button class="nav-link" onclick="location.reload()">🔄 تحديث البيانات</button>  
+            </div>  
+            <div class="year-selector">  
+                <label for="yearSelect">📅 السنة:</label>  
+                <select id="yearSelect" onchange="changeYear(this.value)"></select>  
+            </div>  
+        </div>  
+        <div class="stats" id="stats"></div>  
+        <h2 class="section-title">🏢 اختر العمارة لعرض تفاصيل السكان، أو اضغط أسفله لعرض السجلات المالية العامة</h2>  
+        <div class="grid" id="grid"></div>  
+
+        <div class="detail" id="detail">  
+            <div class="detail-head">  
+                <h2 id="detailTitle">تفاصيل العمارة</h2>  
+                <div class="detail-actions">  
+                    <button class="btn btn-p" id="pdfBtn" onclick="printTable()">🖨️ طباعة PDF</button>  
+                    <button class="btn btn-s" id="excelBtn" onclick="downloadExcel()">📥 تحميل Excel</button>  
+                    <button class="btn btn-o" onclick="closeDetail()">❌ إغلاق</button>  
+                </div>  
+            </div>  
+            <div id="detailContent"></div>  
+        </div>  
+    </div>  
+    <script>  
+    // ==================== INDEXEDDB DATABASE ====================  
+    const DB_NAME = 'BaytiSakanDB';  
+    const DB_VERSION = 1;  
+    let dbInstance = null;  
+      
+    function openDatabase() {  
+        return new Promise((resolve, reject) => {  
+            const request = indexedDB.open(DB_NAME, DB_VERSION);  
+            request.onupgradeneeded = (event) => {  
+                const db = event.target.result;  
+                if (!db.objectStoreNames.contains('appData')) {  
+                    db.createObjectStore('appData', { keyPath: 'id' });  
+                }  
+            };  
+            request.onsuccess = (event) => {  
+                dbInstance = event.target.result;  
+                resolve(dbInstance);  
+            };  
+            request.onerror = (event) => {  
+                console.error('IndexedDB error:', event.target.error);  
+                reject(event.target.error);  
+            };  
+        });  
+    }  
+      
+    function getFromDB(key) {  
+        return new Promise((resolve, reject) => {  
+            if (!dbInstance) { reject('DB not open'); return; }  
+            const tx = dbInstance.transaction('appData', 'readonly');  
+            const store = tx.objectStore('appData');  
+            const request = store.get(key);  
+            request.onsuccess = () => resolve(request.result ? request.result.value : null);  
+            request.onerror = () => reject(request.error);  
+        });  
+    }  
+      
+    async function getDB() {  
+        const data = await getFromDB('residentsDB');  
+        return data || { users: [], settings: { monthlyFee: 125, initialBalance: 0 }, expenses: [] };  
+    }  
+      
+    // ==================== SERVICE WORKER ====================  
+    if ('serviceWorker' in navigator) {  
+        window.addEventListener('load', () => {  
+            navigator.serviceWorker.register('dashboard-sw.js').catch(() => {});  
+        });  
+    }  
+      
+    // ==================== SYNC WITH INDEX.HTML ====================  
+    let syncChannel = null;  
+      
+    function initSync() {  
+        try {  
+            syncChannel = new BroadcastChannel('bayti_sakan_sync');  
+            syncChannel.onmessage = async (event) => {  
+                if (event.data && event.data.type === 'DB_UPDATE') {  
+                    console.log('📡 تم استقبال تحديث من نظام التسيير');  
+                    lastRawData = "";   
+                    await updateAllDataUltraSmart();  
+                }  
+            };  
+        } catch(e) {  
+            console.log('BroadcastChannel غير مدعوم');  
+        }  
+          
+        window.addEventListener('storage', async (event) => {  
+            if (event.key === 'residentsDB' || event.key === 'bayti_sakan_sync_trigger') {  
+                lastRawData = "";  
+                await updateAllDataUltraSmart();  
+            }  
+        });  
+    }  
+      
+    function manualSync() {  
+        if (syncChannel) {  
+            syncChannel.postMessage({ type: 'REQUEST_REFRESH' });  
+        }  
+        lastRawData = "";  
+        updateAllDataUltraSmart();  
+        alert('✅ تمت المزامنة مع نظام التسيير');  
+    }  
+      
+    // ==================== CONSTANTS ====================  
+    const BUILDINGS = Array.from({ length: 32 }, (_, i) => String(i + 1));  
+    const START_YEAR = 2022;  
+    const currentRealYear = new Date().getFullYear();  
+    const END_YEAR = currentRealYear + 1;  
+    const YEARS = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => START_YEAR + i);  
+      
+    let currentBuilding = null;  
+    let selectedYear = currentRealYear;  
+    let lastRawData = "";  
+      
+    function initYearSelector() {  
+        const select = document.getElementById('yearSelect');  
+        select.innerHTML = YEARS.map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y}</option>`).join('');  
+    }  
+      
+    function changeYear(year) {  
+        selectedYear = parseInt(year);  
+        lastRawData = "";  
+        updateAllDataUltraSmart();  
+    }  
+      
+    // ==================== CALCUL EXACT ====================  
+    async function getMonthlyFee() {  
+        const db = await getDB();  
+        return db.settings?.monthlyFee || 125;  
+    }  
+      
+    function getMonthlyFeeSync() {  
+        return 125;  
+    }  
+      
+    function getBalanceAtYearStart(resident, year) {  
+        const prevYear = year - 1;  
+        let totalDuePrev = 0;  
+        const joinDate = resident.joinDate ? new Date(resident.joinDate) : new Date('2024-01-01');  
+        const endDatePrev = new Date(prevYear, 11, 31);  
+        
+        if (joinDate <= endDatePrev) {  
+            let current = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);  
+            while (current <= endDatePrev) {  
+                totalDuePrev += getMonthlyFeeSync();  
+                current.setMonth(current.getMonth() + 1);  
+            }  
+        }  
+          
+        let totalPaidPrev = 0;  
+        if (resident.payments) {  
+            resident.payments.forEach(p => {  
+                const paymentDate = p.date ? new Date(p.date) : null;  
+                if (paymentDate && paymentDate <= endDatePrev) {  
+                    totalPaidPrev += (p.amount || 0);  
+                }  
+            });  
+        }  
+        return totalPaidPrev - totalDuePrev;  
+    }  
+      
+    function getAnnualDueForYear(resident, year) {  
+        const joinDate = resident.joinDate ? new Date(resident.joinDate) : new Date('2024-01-01');  
+        if (joinDate > new Date(year, 11, 31)) return 0;  
+          
+        const yearStart = new Date(year, 0, 1);  
+        const yearEnd = new Date(year, 11, 1);  
+          
+        if (joinDate > yearStart) {  
+            let months = 0;  
+            let c = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);  
+            while (c <= yearEnd) {  
+                months++;  
+                c.setMonth(c.getMonth() + 1);  
+            }  
+            return months * getMonthlyFeeSync();  
+        }  
+        return getMonthlyFeeSync() * 12;  
+    }  
+      
+    function getPaidInYear(resident, year) {  
+        let total = 0;  
+        if (resident.payments) {  
+            resident.payments.forEach(p => {  
+                const paymentDate = p.date ? new Date(p.date) : null;  
+                if (paymentDate && paymentDate.getFullYear() === year) {  
+                    total += (p.amount || 0);  
+                }  
+            });  
+        }  
+        return total;  
+    }  
+      
+    function getBalanceAtYearEnd(resident, year) {  
+        const startBalance = getBalanceAtYearStart(resident, year);  
+        const annualDue = getAnnualDueForYear(resident, year);  
+        const paidThisYear = getPaidInYear(resident, year);  
+        return startBalance + paidThisYear - annualDue;  
+    }  
+      
+    function getStatus(resident) {  
+        const remaining = getBalanceAtYearEnd(resident, selectedYear);  
+        const fee = getMonthlyFeeSync();  
+          
+        if (remaining >= 0) return { t: 'مدفوع', c: 'badge-g' };  
+          
+        const debt = Math.abs(remaining);  
+        if (debt > fee * 3) return { t: 'متأخر', c: 'badge-r' };  
+        return { t: 'قيد التسوية', c: 'badge-o' };  
+    }  
+      
+    // ==================== ULTRA SMART REFRESH ====================  
+    async function updateAllDataUltraSmart() {  
+        const db = await getDB();  
+        const currentRaw = JSON.stringify(db);  
+          
+        if (currentRaw === lastRawData && lastRawData !== "") return;  
+          
+        lastRawData = currentRaw;  
+          
+        updateStatsSilent(db);  
+        updateGridSilent(db);  
+          
+        if (currentBuilding) {  
+            updateTableRowsSilent(currentBuilding, db);  
+        }  
+    }  
+      
+    function updateStatsSilent(db) {  
+        const residents = (db.users || []).filter(u => u && u.role === 'resident');  
+        const expenses = db.expenses || [];  
+          
+        const incomeThisYear = residents.reduce((a, r) => a + getPaidInYear(r, selectedYear), 0);  
+        const expensesThisYear = expenses.filter(e => {  
+            const d = e.date ? new Date(e.date) : null;  
+            return d && d.getFullYear() === selectedYear;  
+        }).reduce((a, e) => a + (e.amount || 0), 0);  
+          
+        const totalIncomeAllTime = residents.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
+        const totalExpensesAllTime = expenses.reduce((a, e) => a + (e.amount || 0), 0);  
+        const totalBalance = (db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime;  
+          
+        const statsContainer = document.getElementById('stats');  
+        if(!statsContainer) return;  
+          
+        statsContainer.innerHTML = `  
+            <div class="stat-card"><div class="icon">👥</div><div class="label">إجمالي السكان</div><div class="value">${residents.length}</div></div>  
+            <div class="stat-card"><div class="icon">📅</div><div class="label">مداخيل سنة ${selectedYear}</div><div class="value" style="color:var(--green);">${incomeThisYear.toLocaleString()} DH</div></div>  
+            <div class="stat-card"><div class="icon">💸</div><div class="label">مصاريف سنة ${selectedYear}</div><div class="value" style="color:var(--red);">${expensesThisYear.toLocaleString()} DH</div></div>  
+            <div class="stat-card"><div class="icon">🏦</div><div class="label">إجمالي الصندوق العام</div><div class="value" style="color:${totalBalance>=0?'var(--green)':'var(--red)'};">${totalBalance.toLocaleString()} DH</div></div>  
+        `;  
+    }  
+      
+    function updateGridSilent(db) {  
+        const residents = (db.users || []).filter(u => u && u.role === 'resident');  
+        const gridContainer = document.getElementById('grid');  
+        if (!gridContainer) return;  
+      
+        let html = BUILDINGS.map(b => {  
+            const count = residents.filter(r => String(r.building || '') === String(b)).length;  
+            return `<div class="card ${currentBuilding === b ? 'active' : ''}" onclick="showDetail('${b}')">  
+                <div class="num">${b}</div>  
+                <div class="count">${count} ساكن</div>  
+            </div>`;  
+        }).join('');  
+          
+        html += `<div class="card expense-card ${currentBuilding === '33' ? 'active' : ''}" onclick="showDetail('33')">  
+            <div class="count">💸 مصاريف ومداخل سنة</div>  
+        </div>`;  
+          
+        html += `<div class="card accounts-card ${currentBuilding === '34' ? 'active' : ''}" onclick="showDetail('34')">  
+            <div class="count">📊 حسابات سنة</div>  
+        </div>`;  
+          
+        gridContainer.innerHTML = html;  
+    }  
+      
+    async function showDetail(b) {  
+        currentBuilding = b;  
+          
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));  
+        const cards = document.querySelectorAll('.card');  
+          
+        if (b === '33') {  
+            if (cards[BUILDINGS.length]) cards[BUILDINGS.length].classList.add('active');  
+            setupExpensesOnlyView();  
+        } else if (b === '34') {  
+            if (cards[BUILDINGS.length + 1]) cards[BUILDINGS.length + 1].classList.add('active');  
+            setupAccountsView();  
+        } else {  
+            const idx = BUILDINGS.indexOf(b);  
+            if (cards[idx]) { cards[idx].classList.add('active'); }  
+            setupBuildingView();  
+        }  
+          
+        const db = await getDB();  
+        updateTableRowsSilent(b, db);  
+        document.getElementById('detail').classList.add('active');  
+        document.getElementById('detail').scrollIntoView({ behavior: 'smooth' });  
+    }  
+      
+    function setupBuildingView() {  
+        const detailContent = document.getElementById('detailContent');  
+        detailContent.innerHTML = `  
+        <h3 style="color: var(--primary); margin-bottom: 12px; margin-top: 10px;">📋 كشف حساب سكان العمارة</h3>  
+        <div class="table-wrap">  
+            <table id="printTable">  
+                <thead>  
+                    <tr><th>#</th><th>الاسم العائلي والشخصي</th><th>مرجع الملكية</th><th>الشقة</th><th>الهاتف</th><th>الرصيد قبله في 01/01/${selectedYear}</th><th>المبلغ السنوي للإسهام ${selectedYear}</th><th>دفوعات الدورة المحاسبية ${selectedYear}</th><th>رصيد متبقي في 31/12/${selectedYear}</th><th>الحالة</th></tr></thead>  
+                <tbody id="tableBodyDom"></tbody>  
+                <tfoot id="tableFootDom"></tfoot>  
+            8d  
+        </div>`;  
+        document.getElementById('pdfBtn').style.display = 'inline-block';  
+    }  
+      
+    function setupExpensesOnlyView() {  
+        const detailContent = document.getElementById('detailContent');  
+        detailContent.innerHTML = `  
+        <h3 style="color: var(--red); margin-bottom: 12px; margin-top: 10px;">💸 سجل مصاريف ومداخيل العمارة والمجمع بالتفصيل لسنة ${selectedYear}</h3>  
+        <div class="table-wrap">  
+            <table id="printTable">  
+                <thead><tr><th>#</th><th>بيان / اسم المصروف</th><th>التاريخ</th><th>النوع والتبعية</th><th>المبلغ المستقطع</th></tr></thead>  
+                <tbody id="expensesTableBody"></tbody>  
+                <tfoot id="expensesTableFoot"></tfoot>  
+            8d  
+        </div>`;  
+        document.getElementById('pdfBtn').style.display = 'inline-block';  
+    }  
+      
+    function setupAccountsView() {  
+        const detailContent = document.getElementById('detailContent');  
+        detailContent.innerHTML = `  
+        <h3 style="color: var(--green); margin-bottom: 12px; margin-top: 10px;">📊 حسابات سنة ${selectedYear} - التقرير المالي الختامي</h3>  
+        <div class="table-wrap">  
+            <table id="printTable">  
+                <thead><tr><th>#</th><th>بيان الحساب</th><th>المبلغ (DH)</th><th>الشرح التوضيحي</th></tr></thead>  
+                <tbody id="accountsTableBody"></tbody>  
+                <tfoot id="accountsTableFoot"></tfoot>  
+            8d  
+        </div>`;  
+        document.getElementById('pdfBtn').style.display = 'inline-block';  
+    }  
+      
+    function updateTableRowsSilent(b, db) {  
+        if (!db) return;   
+        const allExpenses = db.expenses || [];  
+        const residentsAll = (db.users || []).filter(u => u && u.role === 'resident');  
+          
+        if (b === '33') {  
+            document.getElementById('detailTitle').textContent = `💸 مصاريف ومداخيل سنة - السنة: ${selectedYear}`;  
+            const expensesTbody = document.getElementById('expensesTableBody');  
+            const expensesTfoot = document.getElementById('expensesTableFoot');  
+            if (!expensesTbody) return;  
+      
+            const filteredExpenses = allExpenses.filter(e => {  
+                const d = e.date ? new Date(e.date) : null;  
+                return d && d.getFullYear() === selectedYear;  
+            });  
+      
+            let totalExpensesSum = 0;  
+            if(filteredExpenses.length === 0) {  
+                expensesTbody.innerHTML = `<tr><td colspan="5" class="empty">لا توجد مصاريف مسجلة في هذه السنة</td></tr>`;  
+            } else {  
+                expensesTbody.innerHTML = filteredExpenses.map((e, idx) => {  
+                    let amt = (e.amount || 0);  
+                    totalExpensesSum += amt;  
+                    let typeStr = e.building ? `خاص بعمارة ${e.building}` : "عام لكل العمارات";  
+                    return `<tr><td>${idx + 1}</td><td><strong>${e.title || e.description || 'مصروف عام'}</strong></td><td>${e.date || '---'}</td><td><span class="badge ${e.building?'badge-o':'badge-g'}">${typeStr}</span></td><td class="text-r">${amt.toLocaleString()} DH</td></tr>`;  
+                }).join('');  
+            }  
+      
+            if (expensesTfoot) {  
+                expensesTfoot.innerHTML = `<tr class="main-total"><td colspan="4"><strong>إجمالي نفقات الصندوق الصافية المنصرفة</strong></td><td class="text-r" style="color: var(--red);">${totalExpensesSum.toLocaleString()} DH</td></tr>`;  
+            }  
+            return;  
+        }  
+          
+        if (b === '34') {  
+            document.getElementById('detailTitle').textContent = `📊 حسابات سنة - السنة: ${selectedYear}`;  
+            const accountsTbody = document.getElementById('accountsTableBody');  
+            const accountsTfoot = document.getElementById('accountsTableFoot');  
+            if (!accountsTbody) return;  
+              
+            const incomeThisYear = residentsAll.reduce((a, r) => a + getPaidInYear(r, selectedYear), 0);  
+            const expensesThisYear = allExpenses.filter(e => {  
+                const d = e.date ? new Date(e.date) : null;  
+                return d && d.getFullYear() === selectedYear;  
+            }).reduce((a, e) => a + (e.amount || 0), 0);  
+            const netBalance = incomeThisYear - expensesThisYear;  
+              
+            accountsTbody.innerHTML = `<tr><td>1</td><td>💰 إجمالي مداخيل السنة ${selectedYear}</td><td class="text-g">${incomeThisYear.toLocaleString()} DH</td><td>المبالغ الإجمالية المستلمة من الساكنة</td></tr>  
+            <tr><td>2</td><td>💸 إجمالي مصاريف السنة ${selectedYear}</td><td class="text-r">${expensesThisYear.toLocaleString()} DH</td><td>المصاريف المخصومة من صندوق العمارة الحصصي</td></tr>  
+            <tr><td>3</td><td>📦 صافي الفائض/الخسارة للسنة ${selectedYear}</td><td class="${netBalance >= 0 ? 'text-g' : 'text-r'}">${netBalance.toLocaleString()} DH</td><td>${netBalance >= 0 ? 'الفائض الصافي الحالي المحتسب' : 'الخسارة المحتسبة'}</td></tr>`;  
+              
+            const totalIncomeAllTime = residentsAll.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
+            const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
+            const globalTotalBalance = (db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime;  
+              
+            if (accountsTfoot) {  
+                accountsTfoot.innerHTML = `<tr class="main-total"><td colspan="3"><strong>🏦 إجمالي الصندوق العام التراكمي (المجمع كامل)</strong></td><td class="${globalTotalBalance >= 0 ? 'text-g' : 'text-r'}">${globalTotalBalance.toLocaleString()} DH</td></tr>`;  
+            }  
+            return;  
+        }  
+      
+        // عرض العمارات الاعتيادي  
+        const residents = residentsAll.filter(u => String(u.building || '') === String(b));  
+        document.getElementById('detailTitle').textContent = `🏢 عمارة ${b} - ${residents.length} ساكن - السنة: ${selectedYear}`;  
+          
+        const tbody = document.getElementById('tableBodyDom');  
+        const tfoot = document.getElementById('tableFootDom');  
+        if (!tbody) return;  
+      
+        let totalPrev = 0, totalAnnual = 0, totalPaid = 0, totalRemaining = 0;  
+      
+        const rowsHtmlArray = residents.map((r, i) => {  
+            const prevBalance = getBalanceAtYearStart(r, selectedYear);  
+            const annualDue = getAnnualDueForYear(r, selectedYear);  
+            const paidInYear = getPaidInYear(r, selectedYear);  
+            const endBalance = getBalanceAtYearEnd(r, selectedYear);  
+              
+            totalPrev += prevBalance;  
+            totalAnnual += annualDue;  
+            totalPaid += paidInYear;  
+            totalRemaining += endBalance;  
+              
+            const st = getStatus(r);  
+            const prevColor = prevBalance >= 0 ? 'text-g' : 'text-r';  
+            const endColor = endBalance >= 0 ? 'text-g' : 'text-r';  
+              
+            return `<tr>  
+                <td>${i + 1}</td>  
+                <td><strong>${r.name || '---'}</strong></td>  
+                <td>${r.propriete || r.propRef || '---'}</td>  
+                <td>${r.appt || '---'}</td>  
+                <td>${r.phone || '---'}</td>  
+                <td class="${prevColor}">${prevBalance.toLocaleString()} DH</td>  
+                <td>${annualDue.toLocaleString()} DH</td>  
+                <td class="text-g">${paidInYear.toLocaleString()} DH</td>  
+                <td class="${endColor}">${endBalance.toLocaleString()} DH</td>  
+                <td><span class="badge ${st.c}">${st.t}</span></td>  
+            </tr>`;  
+        });  
+      
+        tbody.innerHTML = rowsHtmlArray.join('');  
+      
+        const filteredExpenses = allExpenses.filter(e => {  
+            const d = e.date ? new Date(e.date) : null;  
+            return d && d.getFullYear() === selectedYear && (String(e.building) === String(b) || !e.building);  
+        });  
+      
+        let expensesThisYearTotal = 0;  
+        filteredExpenses.forEach(e => {  
+            if (e.building && String(e.building) === String(b)) {  
+                expensesThisYearTotal += (e.amount || 0);  
+            } else {  
+                expensesThisYearTotal += ((e.amount || 0) / 32);  
+            }  
+        });  
+      
+        const totalIncomeAllTime = residentsAll.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
+        const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
+        const globalTotalBalance = (db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime;  
+        const netYearBalance = totalPaid - expensesThisYearTotal;  
+      
+        if (tfoot) {  
+            tfoot.innerHTML = `  
+            <tr class="main-total"><td colspan="5"><strong>الإجمالي الإداري للسكان</strong></td><td class="${totalPrev >= 0 ? 'text-g' : 'text-r'}">${totalPrev.toLocaleString()} DH</td><td>${totalAnnual.toLocaleString()} DH</td><td class="text-g">${totalPaid.toLocaleString()} DH</td><td class="${totalRemaining >= 0 ? 'text-g' : 'text-r'}">${totalRemaining.toLocaleString()} DH</td><td>${residents.length} ساكن</td></tr>  
+            <tr class="extra-calc"><td colspan="5" style="text-align: left; padding-left: 15px;">💰 مداخيل العمارة في سنة ${selectedYear}:</td><td colspan="5" class="text-g" style="text-align: right; padding-right: 15px;">${totalPaid.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc"><td colspan="5" style="text-align: left; padding-left: 15px;">💸 مصاريف العمارة الحصصية في سنة ${selectedYear}:</td><td colspan="5" class="text-r" style="text-align: right; padding-right: 15px;">${expensesThisYearTotal.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc" style="background: #e3f7ec;"><td colspan="5" style="text-align: left; padding-left: 15px;">📦 صافي الفائض/الباقي في الصندوق لهذه السنة (${selectedYear}):</td><td colspan="5" class="${netYearBalance >= 0 ? 'text-g' : 'text-r'}" style="text-align: right; padding-right: 15px; font-size: 13px;">${netYearBalance.toLocaleString()} DH</td></tr>  
+            <tr class="extra-calc" style="background: #e8f0fe;"><td colspan="5" style="text-align: left; padding-left: 15px;">🏦 إجمالي الصندوق العام التراكمي (المجمع كامل):</td><td colspan="5" style="text-align: right; padding-right: 15px; font-size: 13px; color: var(--primary); font-weight:bold;">${globalTotalBalance.toLocaleString()} DH</td></tr>`;  
+        }  
+    }  
+      
+    function closeDetail() {  
+        document.getElementById('detail').classList.remove('active');  
+        currentBuilding = null;  
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));  
+    }  
+      
+    async function printTable() {  
+        if (!currentBuilding) return;  
+        window.print();  
+    }  
+      
+    async function downloadExcel() {  
+        if (!currentBuilding) return;  
+        
+        if (typeof XLSX === 'undefined') {  
+            alert("المكتبة البرمجية المسؤولة عن الـ Excel قيد التحميل أو غير متاحة حالياً، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.");  
+            return;  
+        }  
+          
+        let residents = [];  
+        let allExpenses = [];  
+        let db = null;  
+          
+        try {  
+            db = await getDB();  
+            residents = (db.users || []).filter(u => u && u.role === 'resident');  
+            allExpenses = db.expenses || [];  
+        } catch(e) {  
+            console.error("Error connecting to IndexedDB:", e);  
+            alert("حدث خطأ أثناء الاتصال بقاعدة البيانات المحلية.");  
+            return;  
+        }  
+      
+        const wb = XLSX.utils.book_new();  
+      
+        if (currentBuilding === '33') {  
+            const expData = [['#', 'بيان / اسم المصروف', 'التاريخ', 'النوع والتبعية', 'المبلغ المستقطع (DH)']];  
+            const filteredExpenses = allExpenses.filter(e => {  
+                const d = e.date ? new Date(e.date) : null;  
+                return d && d.getFullYear() === selectedYear;  
+            });  
+            let total = 0;  
+            filteredExpenses.forEach((e, idx) => {  
+                let amt = Number(e.amount || 0);  
+                total += amt;  
+                let typeStr = e.building ? `خاص بعمارة ${e.building}` : "عام لكل العمارات";  
+                expData.push([idx+1, e.title || e.description || 'مصروف', e.date || '---', typeStr, amt]);  
+            });  
+            expData.push(['', 'إجمالي النفقات الصافية المنصرفة للعام', '', '', total]);  
+            const wsExp = XLSX.utils.aoa_to_sheet(expData);  
+            wsExp['!views'] = [{RTL: true}];  
+            wsExp['!cols'] = [{wch:6},{wch:40},{wch:15},{wch:25},{wch:22}];  
+            XLSX.utils.book_append_sheet(wb, wsExp, `المصاريف_${selectedYear}`);  
+            XLSX.writeFile(wb, `سجل_المصاريف_والمداخيل_سنة_${selectedYear}.xlsx`);  
+            return;  
+        }  
+          
+        if (currentBuilding === '34') {  
+            const incomeThisYear = Number(residents.reduce((a, r) => a + getPaidInYear(r, selectedYear), 0));  
+            const expensesThisYear = Number(allExpenses.filter(e => {  
+                const d = e.date ? new Date(e.date) : null;  
+                return d && d.getFullYear() === selectedYear;  
+            }).reduce((a, e) => a + (e.amount || 0), 0));  
+            const netBalance = incomeThisYear - expensesThisYear;  
+            const totalIncomeAllTime = residents.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
+            const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
+            const globalTotalBalance = Number((db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime);  
+            const accountsData = [  
+                ['#', 'بيان الحساب المالي المجمع', 'المبلغ (DH)', 'الشرح التوضيحي للخانة'],  
+                [1, `إجمالي مداخيل السنة ${selectedYear}`, incomeThisYear, 'المبالغ الإجمالية المستلمة من الساكنة'],  
+                [2, `إجمالي مصاريف السنة ${selectedYear}`, expensesThisYear, 'المصاريف المخصومة من صندوق العمارة الحصصي'],  
+                [3, `صافي الفائض/الخسارة للسنة ${selectedYear}`, netBalance, netBalance >= 0 ? 'الفائض الصافي الحالي المحتسب' : 'الخسارة المحتسبة'],  
+                [4, 'إجمالي الصندوق العام التراكمي (كامل المجمع)', globalTotalBalance, 'السيولة العامة لكامل عمارات السكن المشترك']  
+            ];  
+            const wsAcc = XLSX.utils.aoa_to_sheet(accountsData);  
+            wsAcc['!views'] = [{RTL: true}];  
+            wsAcc['!cols'] = [{wch:6},{wch:45},{wch:25},{wch:55}];  
+            XLSX.utils.book_append_sheet(wb, wsAcc, `حسابات_سنة_${selectedYear}`);  
+            XLSX.writeFile(wb, `التقرير_المالي_الختامي_سنة_${selectedYear}.xlsx`);  
+            return;  
+        }  
+      
+        const bResidents = residents.filter(r => String(r.building || '') === String(currentBuilding));  
+        const data = [['#', 'الاسم العائلي والشخصي', 'مرجع الملكية', 'الشقة', 'الهاتف', `الرصيد قبله في 01/01/${selectedYear}`, `المبلغ السنوي للإسهام ${selectedYear}`, `دفوعات الدورة ${selectedYear}`, `رصيد متبقي في 31/12/${selectedYear}`, 'الحالة']];  
+          
+        let tp = 0, ta = 0, tpa = 0, tr = 0;  
+      
+        bResidents.forEach((r, i) => {  
+            const prev = Number(getBalanceAtYearStart(r, selectedYear) || 0);  
+            const annual = Number(getAnnualDueForYear(r, selectedYear) || 0);  
+            const paid = Number(getPaidInYear(r, selectedYear) || 0);  
+            const rem = Number(getBalanceAtYearEnd(r, selectedYear) || 0);  
+            const st = getStatus(r);  
+              
+            tp += prev; ta += annual; tpa += paid; tr += rem;  
+            data.push([i+1, r.name||'---', r.propriete||r.propRef||'---', r.appt||'---', r.phone||'---', prev, annual, paid, rem, st.t]);  
+        });  
+          
+        data.push(['', 'الإجمالي الإداري لسكان العمارة', '', '', '', tp, ta, tpa, tr, `${bResidents.length} ساكن`]);  
+      
+        const ws = XLSX.utils.aoa_to_sheet(data);  
+        ws['!views'] = [{RTL: true}];  
+        ws['!cols'] = [{wch:5},{wch:30},{wch:20},{wch:10},{wch:18},{wch:25},{wch:25},{wch:25},{wch:25},{wch:15}];  
+        XLSX.utils.book_append_sheet(wb, ws, `كشف_سكان_العمارة_${currentBuilding}`);  
+      
+        const filteredExpenses = allExpenses.filter(e => {  
+            const d = e.date ? new Date(e.date) : null;  
+            return d && d.getFullYear() === selectedYear && (String(e.building) === String(currentBuilding) || !e.building);  
+        });  
+      
+        let expensesThisYearTotal = 0;  
+        filteredExpenses.forEach(e => {  
+            if (e.building && String(e.building) === String(currentBuilding)) {  
+                expensesThisYearTotal += Number(e.amount || 0);  
+            } else {  
+                expensesThisYearTotal += Number((e.amount || 0) / 32);  
+            }  
+        });  
+      
+        const totalIncomeAllTime = residents.reduce((a, r) => a + (r.payments || []).reduce((b, p) => b + (p.amount || 0), 0), 0);  
+        const totalExpensesAllTime = allExpenses.reduce((a, e) => a + (e.amount || 0), 0);  
+        const globalTotalBalance = Number((db.settings?.initialBalance || 0) + totalIncomeAllTime - totalExpensesAllTime);  
+        const netYearBalance = tpa - expensesThisYearTotal;  
+      
+        const summaryData = [  
+            ['📊 التقرير والخلاصة المالية المنعزلة للعمارة والجمالية العامة'],  
+            [],  
+            ['بيان الحساب المالي المجمع للعمارة', 'المبلغ الحالي (DH)', 'الشرح التوضيحي المفصل للحساب الخزني'],  
+            [`مداخيل العمارة الصافية المسجلة في سنة ${selectedYear}`, Number(tpa), 'المبالغ الإجمالية المستلمة والمسجلة فعلياً من ساكنة العمارة'],  
+            [`مصاريف العمارة الحصصية/الخاصة لسنة ${selectedYear}`, Number(expensesThisYearTotal), 'المصاريف المباشرة للعمارة مع نصيبها 1/32 من المصاريف العامة المجمعة'],  
+            [`صافي الفائض/الباقي بالخزينة لعام ${selectedYear}`, Number(netYearBalance), 'الحصيلة الحسابية الدورية المستخلصة (المداخيل مطروح منها المصاريف)'],  
+            ['إجمالي الصندوق العام التراكمي لكامل المجمع', Number(globalTotalBalance), 'السيولة الكلية المتبقية بصندوق الاتحاد العام لجميع العمارات المشتركة']  
+        ];  
+      
+        const wsSum = XLSX.utils.aoa_to_sheet(summaryData);  
+        wsSum['!views'] = [{RTL: true}];  
+        wsSum['!cols'] = [{wch:45},{wch:25},{wch:65}];  
+        XLSX.utils.book_append_sheet(wb, wsSum, 'الخلاصة_والصندوق_المالي');  
+      
+        XLSX.writeFile(wb, `تقرير_العمارة_${currentBuilding}_سنة_${selectedYear}.xlsx`);  
+    }  
+      
+    // ==================== INIT ====================  
+    (async function() {  
+        await openDatabase();  
+        initYearSelector();  
+        initSync();  
+        await updateAllDataUltraSmart();  
+        setInterval(updateAllDataUltraSmart, 5000);  
+    })();  
+    </script>  
+</body>  
+</html>
+   
